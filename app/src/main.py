@@ -1,12 +1,21 @@
-from modules import PDFProcessingService
-from config import PDFS_DIR
+"""
+Este script inicializa e executa o serviço de processamento de PDFs.
+Ele utiliza o padrão de design Factory para criar a instância do serviço
+e executar o processamento de acordo com os parâmetros configurados.
+"""
+
+from modules import PDFProcessingServiceFactory
+from config import URL, FILTER
 
 if __name__ == "__main__":
-    url = "https://www.gov.br/ans/pt-br/acesso-a-informacao/participacao-da-sociedade/atualizacao-do-rol-de-procedimentos"  # Substitua pelo site desejado
-    _filter = "ANEXO"  # Ajuste conforme necessário
-    folder = PDFS_DIR
-    zip_name = "pdfs_compactados.zip"
+    """
+    Função principal do programa. Cria uma instância do serviço de processamento de PDFs
+    através da fábrica e executa o processo de busca, download e compactação dos PDFs 
+    com base na URL e no filtro fornecido.
+    """
     
-    service = PDFProcessingService(folder, zip_name)
-
-    service.process(url, _filter)
+    # Criação do serviço usando a fábrica
+    service = PDFProcessingServiceFactory.create()
+    
+    # Execução do processo de obtenção e compactação dos PDFs
+    service.process(URL, FILTER)
