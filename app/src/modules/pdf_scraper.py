@@ -1,7 +1,7 @@
 from .interfaces import PDFScraperInterface
-import requests
 from bs4 import BeautifulSoup # type: ignore -> pylance module error
 from urllib.parse import urljoin
+import requests
 import re
 
 class RequestsPDFScraper(PDFScraperInterface):
@@ -34,7 +34,6 @@ class RequestsPDFScraper(PDFScraperInterface):
 
         # Captura PDFs mencionados em parágrafos <p> (usando regex)
         for paragraph in soup.find_all('p'):
-            text = paragraph.get_text()
             # Procura por links de PDFs no texto do parágrafo
             matches = re.findall(r'href=[\'"]?([^\'" >]+\.pdf)', str(paragraph))
             for match in matches:

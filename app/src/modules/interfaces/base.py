@@ -37,12 +37,12 @@ class ZipCompressorInterface(ABC):
     """Interface para classes responsáveis por criar arquivos ZIP com arquivos específicos."""
     
     @abstractmethod
-    def create_zip(name_zip: str) -> None:
+    def create_zip(zip_name: str) -> None:
         """
         Cria um arquivo ZIP com os arquivos especificados.
         
         Parâmetros:
-            name_zip (str): Nome do arquivo ZIP a ser criado.
+            zip_name (str): Nome do arquivo ZIP a ser criado.
         """
         pass
 
@@ -51,12 +51,12 @@ class PDFProcessingServiceInterface(ABC):
     """Interface para classes que gerenciam o processo de busca, download e compressão de arquivos PDF."""
     
     @abstractmethod
-    def process(self, url: str, filtro: str) -> None:
+    def process(self, url: str, _filter: str) -> None:
         """
         Executa o processo completo de busca, download e compactação dos arquivos PDF.
         
         Parâmetros:
             url (str): URL da página web de onde os PDFs serão baixados.
-            filtro (str): Filtro para encontrar os PDFs desejados.
+            _filter (str): _filter para encontrar os PDFs desejados.
         """
         pass

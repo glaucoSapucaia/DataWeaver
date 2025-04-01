@@ -2,9 +2,13 @@ from .interfaces import PDFProcessingServiceInterface
 from .pdf_scraper import RequestsPDFScraper
 from .file_manager import FileManager
 from .zip_compressor import ZipCompressor
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 class PDFProcessingService(PDFProcessingServiceInterface):
-    def __init__(self, folder, nome_zip: str) -> None:
+    def __init__(self, folder: 'Path', nome_zip: str) -> None:
         """
         Inicializa o serviço de processamento de PDFs.
         
