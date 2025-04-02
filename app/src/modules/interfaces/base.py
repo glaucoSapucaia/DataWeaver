@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from pathlib import Path
+
 class PDFScraperInterface(ABC):
     """Interface para classes que extraem links de arquivos PDF de uma página web."""
     
@@ -59,4 +62,8 @@ class PDFProcessingServiceInterface(ABC):
             url (str): URL da página web de onde os PDFs serão baixados.
             _filter (str): _filter para encontrar os PDFs desejados.
         """
+        pass
+
+class PDFRemoveInterface(ABC):
+    def remove_pdfs(self, folder: 'Path') -> None:
         pass

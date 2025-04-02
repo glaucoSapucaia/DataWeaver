@@ -1,4 +1,5 @@
-from .interfaces import *
+from .interfaces import (FileManagerInterface, PDFProcessingServiceInterface,
+                         PDFScraperInterface, ZipCompressorInterface)
 
 class PDFProcessingService(PDFProcessingServiceInterface):
     def __init__(self, nome_zip: str,

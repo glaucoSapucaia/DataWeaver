@@ -8,6 +8,7 @@ class PDFProcessingServiceFactory:
     def create():
         scraper = RequestsPDFScraper()
         file_manager = FileManager(PDFS_DIR)
-        zip_compressor = ZipCompressor(PDFS_DIR)
+        remove_pdf = PDFRemove()
+        zip_compressor = ZipCompressor(PDFS_DIR, remove_pdf)
         
         return PDFProcessingService(ZIP_NAME, scraper, file_manager, zip_compressor)
