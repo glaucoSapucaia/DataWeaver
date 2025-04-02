@@ -5,11 +5,11 @@ e executar o processamento de acordo com os parâmetros configurados.
 """
 
 from modules import PDFProcessingServiceFactory
-from config import URL, FILTER
+from config import URL
 
 if __name__ == "__main__":    
     # Criação do serviço usando a fábrica
     service = PDFProcessingServiceFactory.create()
     
     # Execução do processo de obtenção e compactação dos PDFs
-    service.process(URL, FILTER)
+    service.process(URL)

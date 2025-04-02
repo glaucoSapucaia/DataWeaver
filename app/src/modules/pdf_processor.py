@@ -2,7 +2,7 @@ from .interfaces import (FileManagerInterface, PDFProcessingServiceInterface,
                          PDFScraperInterface, ZipCompressorInterface, PDFRemoveInterface)
 
 class PDFProcessingService(PDFProcessingServiceInterface):
-    def __init__(self, nome_zip: str,
+    def __init__(self, zip_name: str,
                  scraper: PDFScraperInterface,
                  file_manager: FileManagerInterface,
                  zip_compressor: ZipCompressorInterface,
@@ -13,15 +13,15 @@ class PDFProcessingService(PDFProcessingServiceInterface):
         Parâmetros:
             scraper (PDFScraper): Instância de um scraper para buscar os PDFs.
             file_manager (FileManager): Instância do gerenciador de arquivos.
-            nome_zip (str): Nome do arquivo ZIP final.
+            zip_name (str): Nome do arquivo ZIP final.
         """
-        self.nome_zip = nome_zip
+        self.zip_name = zip_name
         self.scraper = scraper
         self.file_manager = file_manager
         self.zip_compressor = zip_compressor
         self.pdf_remove = pdf_remove
     
-    def process(self, url: str, keyword: str) -> None:
+    def process(self, url: str) -> None:
         """
         Executa todo o fluxo de busca, download e compactação dos PDFs.
         
@@ -41,7 +41,7 @@ class PDFProcessingService(PDFProcessingServiceInterface):
             self.file_manager.save_file(link)
         
         print("Compactando arquivos...")
-        self.zip_compressor.create_zip(self.nome_zip)
+        self.zip_compressor.create_zip(self.zip_name)
 
         print('Excluindo arquivos baixados...')
         self.pdf_remove.remove_pdfs()

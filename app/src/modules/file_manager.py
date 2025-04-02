@@ -17,7 +17,6 @@ class FileManager(FileManagerInterface):
             folder (str): Caminho da folder onde os arquivos serão armazenados.
         """
         self.folder = folder
-        os.makedirs(self.folder, exist_ok=True)
     
     def save_file(self, url: str) -> None:
         """
