@@ -4,6 +4,11 @@ e parâmetros de execução do programa.
 """
 
 from pathlib import Path
+from dotenv import load_dotenv # type: ignore
+from utils import get_env_variable, ensure_directory_exists
+
+# Carregando variáveis de ambiente
+load_dotenv()
 
 # DIRETÓRIOS
 
@@ -13,19 +18,19 @@ MODULES_DIR: Path = ROOT_DIR / 'modules'
 TESTS_DIR: Path = ROOT_DIR / 'tests'
 ZIP_FILE: Path = PDFS_DIR / 'pdfs_compactados.zip'
 
+# Garantir que os diretórios necessários existam
+ensure_directory_exists(PDFS_DIR)
+
 # EXECUÇÕES
 
-# Garantir que os diretórios necessários existam
-PDFS_DIR.mkdir(parents=True, exist_ok=True)
-if not PDFS_DIR.exists():
-    print(f"Erro: O diretório {PDFS_DIR} não pôde ser criado.")
-    exit(1)
-
 # Nome do arquivo ZIP
-ZIP_NAME: str = "pdfs_compactados.zip"
+ZIP_NAME: str = get_env_variable('ZIP_NAME', "pdfs_compactados.zip")
 
 # Filtro para busca de PDFs
-FILTER: str = "ANEXO"
+FILTER: str = get_env_variable('FILTER', "ANEXO")
 
 # Site para a busca
-URL: str = "https://www.gov.br/ans/pt-br/acesso-a-informacao/participacao-da-sociedade/atualizacao-do-rol-de-procedimentos"
+URL: str = get_env_variable('URL', "https://www.gov.br/ans/pt-br/acesso-a-informacao/participacao-da-sociedade/atualizacao-do-rol-de-procedimentos")
+
+# Exibir configurações carregadas (para debug)
+print(f"Configurações carregadas: ZIP_NAME={ZIP_NAME}, FILTER={FILTER}, URL={URL}")

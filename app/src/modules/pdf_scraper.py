@@ -1,5 +1,5 @@
 from .interfaces import PDFScraperInterface
-from bs4 import BeautifulSoup # type: ignore -> pylance module error
+from bs4 import BeautifulSoup # type: ignore
 from urllib.parse import urljoin
 import requests
 import re

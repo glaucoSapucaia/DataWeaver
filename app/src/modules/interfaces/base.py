@@ -49,6 +49,18 @@ class ZipCompressorInterface(ABC):
         """
         pass
 
+    @abstractmethod
+    def _get_zip_path(self, zip_name: str) -> 'Path':
+        pass
+
+    @abstractmethod
+    def _compress_files(self, zip_path: 'Path') -> None:
+        pass
+    
+    @abstractmethod
+    def _get_pdf_files(self) -> list['Path']:
+        pass
+
 
 class PDFProcessingServiceInterface(ABC):
     """Interface para classes que gerenciam o processo de busca, download e compressão de arquivos PDF."""
@@ -65,5 +77,6 @@ class PDFProcessingServiceInterface(ABC):
         pass
 
 class PDFRemoveInterface(ABC):
-    def remove_pdfs(self, folder: 'Path') -> None:
+    @abstractmethod
+    def remove_pdfs(self) -> None:
         pass
