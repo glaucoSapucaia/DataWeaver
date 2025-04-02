@@ -2,13 +2,13 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pathlib import Path
+    from bs4 import BeautifulSoup # type: ignore
 
 class PDFScraperInterface(ABC):
     """Interface para classes que extraem links de arquivos PDF de uma página web."""
     
     @abstractmethod
-    def get_pdf_links(self, url: str, filtro: str) -> list:
+    def get_pdf_links(self, url: str) -> list:
         """
         Obtém os links dos arquivos PDF que correspondem ao filtro.
         
@@ -49,34 +49,37 @@ class ZipCompressorInterface(ABC):
         """
         pass
 
-    @abstractmethod
-    def _get_zip_path(self, zip_name: str) -> 'Path':
-        pass
-
-    @abstractmethod
-    def _compress_files(self, zip_path: 'Path') -> None:
-        pass
-    
-    @abstractmethod
-    def _get_pdf_files(self) -> list['Path']:
-        pass
-
 
 class PDFProcessingServiceInterface(ABC):
     """Interface para classes que gerenciam o processo de busca, download e compressão de arquivos PDF."""
     
     @abstractmethod
-    def process(self, url: str, _filter: str) -> None:
+    def process(self, url: str, keyword: str) -> None:
         """
         Executa o processo completo de busca, download e compactação dos arquivos PDF.
         
         Parâmetros:
             url (str): URL da página web de onde os PDFs serão baixados.
-            _filter (str): _filter para encontrar os PDFs desejados.
+            keyword (str): keyword para encontrar os PDFs desejados.
         """
         pass
 
 class PDFRemoveInterface(ABC):
     @abstractmethod
     def remove_pdfs(self) -> None:
+        pass
+
+class HttpClientInterface(ABC):
+    """Interface para um cliente HTTP genérico."""
+
+    @abstractmethod
+    def fetch_html(self, url: str) -> str:
+        """Faz uma requisição HTTP GET e retorna a resposta."""
+        pass
+
+class PDFExtractorStrategy(ABC):
+    """Interface para estratégias de extração de links de PDFs."""
+
+    @abstractmethod
+    def extract(self, soup: 'BeautifulSoup', base_url: str, keyword: str) -> list[str]:
         pass

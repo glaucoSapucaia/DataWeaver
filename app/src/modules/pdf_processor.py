@@ -21,16 +21,16 @@ class PDFProcessingService(PDFProcessingServiceInterface):
         self.zip_compressor = zip_compressor
         self.pdf_remove = pdf_remove
     
-    def process(self, url: str, _filter: str) -> None:
+    def process(self, url: str, keyword: str) -> None:
         """
         Executa todo o fluxo de busca, download e compactação dos PDFs.
         
         Parâmetros:
             url (str): URL da página onde os PDFs estão localizados.
-            filtro (str): Palavra-chave para filtrar os PDFs desejados.
+            keyword (str): Palavra-chave para filtrar os PDFs desejados.
         """
         print("Buscando PDFs...")
-        pdf_links = self.scraper.get_pdf_links(url, _filter)
+        pdf_links = self.scraper.get_pdf_links(url)
         
         if not pdf_links:
             print("Nenhum PDF encontrado.")
