@@ -21,6 +21,7 @@ TESTS_DIR: Path = ROOT_DIR / 'tests'
 
 LOG_DIR = ROOT_DIR / 'logs'
 LOG_FILE = LOG_DIR / "app.log"
+ERROR_LOG_FILE = LOG_DIR / 'error.log'
 
 # Garantir que os diretórios necessários existam
 ensure_directory_exists(PDFS_DIR)
