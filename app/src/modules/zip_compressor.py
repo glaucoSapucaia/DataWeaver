@@ -1,7 +1,6 @@
 from .interfaces import ZipCompressorInterface, PDFRemoveInterface
 from typing import TYPE_CHECKING
 import zipfile
-import os
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -43,8 +42,9 @@ class PDFRemove(PDFRemoveInterface):
 
     def remove_pdfs(self) -> None:
         """Remove arquivos PDF após a compactação."""
-        for root, _, files in os.walk(self.folder):
-            for file in files:
-                if file.endswith('.pdf'):
-                    os.remove(os.path.join(root, file))
-                    print(f"Arquivo excluído: {file}")
+        for pdf_file in self.folder.rglob("*.pdf"):
+            try:
+                pdf_file.unlink()
+                print(f"Arquivo excluído: {pdf_file.name}")
+            except Exception as e:
+                print(f"Erro ao excluir {pdf_file.name}: {e}")
