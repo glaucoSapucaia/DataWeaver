@@ -40,7 +40,7 @@ class ZipCompressorInterface(ABC):
     """Interface para classes responsáveis por criar arquivos ZIP com arquivos específicos."""
     
     @abstractmethod
-    def create_zip(zip_name: str) -> None:
+    def create_zip(self, zip_name: str) -> None:
         """
         Cria um arquivo ZIP com os arquivos especificados.
         
@@ -54,7 +54,7 @@ class PDFProcessingServiceInterface(ABC):
     """Interface para classes que gerenciam o processo de busca, download e compressão de arquivos PDF."""
     
     @abstractmethod
-    def process(self, url: str, keyword: str) -> None:
+    def process(self, url: str) -> None:
         """
         Executa o processo completo de busca, download e compactação dos arquivos PDF.
         
@@ -81,5 +81,5 @@ class PDFExtractorStrategy(ABC):
     """Interface para estratégias de extração de links de PDFs."""
 
     @abstractmethod
-    def extract(self, soup: 'BeautifulSoup', base_url: str, keyword: str) -> list[str]:
+    def extract(self, keyword: str) -> list[str]:
         pass
