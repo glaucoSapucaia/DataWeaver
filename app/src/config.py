@@ -16,10 +16,16 @@ ROOT_DIR: Path = Path(__file__).resolve().parent
 PDFS_DIR: Path = ROOT_DIR / 'pdfs'
 MODULES_DIR: Path = ROOT_DIR / 'modules'
 TESTS_DIR: Path = ROOT_DIR / 'tests'
-ZIP_FILE: Path = PDFS_DIR / 'pdfs_compactados.zip'
+
+# LOGS
+
+LOG_DIR = ROOT_DIR / 'logs'
+LOG_FILE = LOG_DIR / "app.log"
 
 # Garantir que os diretórios necessários existam
 ensure_directory_exists(PDFS_DIR)
+ensure_directory_exists(LOG_DIR)
+
 
 # EXECUÇÕES
 
@@ -31,6 +37,3 @@ FILTER: str = get_env_variable('FILTER', "ANEXO")
 
 # Site para a busca
 URL: str = get_env_variable('URL', "https://www.gov.br/ans/pt-br/acesso-a-informacao/participacao-da-sociedade/atualizacao-do-rol-de-procedimentos")
-
-# Exibir configurações carregadas (para debug)
-print(f"Configurações carregadas: ZIP_NAME={ZIP_NAME}, FILTER={FILTER}, URL={URL}")
