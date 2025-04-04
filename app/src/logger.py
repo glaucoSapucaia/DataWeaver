@@ -1,39 +1,50 @@
 import logging
-from config import LOG_FILE, ERROR_LOG_FILE
+from utils import ensure_directory_exists
+from log_config import LOG_FILE, ERROR_LOG_FILE, WARNING_LOG_FILE, LOG_DIR
 
-# Configuração do logger geral (INFO)
+# Verificando existencia do diretório
+if not ensure_directory_exists(LOG_DIR):
+    logging.error(f"Erro ao criar diretório {LOG_DIR}")
+    exit(1)
+
+# ==================== INFO ====================
+
 logger = logging.getLogger("PDFProcessor")
-logger.setLevel(logging.INFO)  # Nível do logger principal
+logger.setLevel(logging.INFO)
 
-# Configuração do handler de arquivo para logs gerais
 file_handler = logging.FileHandler(LOG_FILE)
 file_handler.setLevel(logging.INFO)
 
-# Configuração do handler de terminal para logs gerais
 stream_handler = logging.StreamHandler()
 stream_handler.setLevel(logging.INFO)
 
-# Formato dos logs
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 file_handler.setFormatter(formatter)
 stream_handler.setFormatter(formatter)
 
-# Adiciona os handlers ao logger
 logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
+# ==================== ERROR ====================
 
-# Configuração do logger de erros (ERROR)
 error_logger = logging.getLogger("PDFProcessorError")
-error_logger.setLevel(logging.ERROR)  # Apenas logs de erro e acima
+error_logger.setLevel(logging.ERROR)
 
-# Configuração do handler de arquivo para logs de erro
 error_file_handler = logging.FileHandler(ERROR_LOG_FILE)
 error_file_handler.setLevel(logging.ERROR)
 error_file_handler.setFormatter(formatter)
 
-# Adiciona o handler ao logger de erros
 error_logger.addHandler(error_file_handler)
-
-# Evita que logs de erro sejam duplicados no terminal ao herdar os handlers do logger raiz
 error_logger.propagate = False
+
+# ==================== WARNING ====================
+
+warning_logger = logging.getLogger("PDFProcessorWarning")
+warning_logger.setLevel(logging.WARNING)
+
+warning_file_handler = logging.FileHandler(WARNING_LOG_FILE)
+warning_file_handler.setLevel(logging.WARNING)
+warning_file_handler.setFormatter(formatter)
+
+warning_logger.addHandler(warning_file_handler)
+warning_logger.propagate = False

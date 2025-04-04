@@ -4,8 +4,10 @@ e parâmetros de execução do programa.
 """
 
 from pathlib import Path
+from logger import logger
 from dotenv import load_dotenv # type: ignore
 from utils import get_env_variable, ensure_directory_exists
+from log_config import LOG_DIR
 
 # Carregando variáveis de ambiente
 load_dotenv()
@@ -17,16 +19,10 @@ PDFS_DIR: Path = ROOT_DIR / 'pdfs'
 MODULES_DIR: Path = ROOT_DIR / 'modules'
 TESTS_DIR: Path = ROOT_DIR / 'tests'
 
-# LOGS
-
-LOG_DIR = ROOT_DIR / 'logs'
-LOG_FILE = LOG_DIR / "app.log"
-ERROR_LOG_FILE = LOG_DIR / 'error.log'
-
 # Garantir que os diretórios necessários existam
-ensure_directory_exists(PDFS_DIR)
-ensure_directory_exists(LOG_DIR)
-
+if not ensure_directory_exists(PDFS_DIR):
+    logger.error(f"Erro ao criar diretório {PDFS_DIR}")
+    exit(1)
 
 # EXECUÇÕES
 
