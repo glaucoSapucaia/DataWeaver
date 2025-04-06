@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 import zipfile
 
 if TYPE_CHECKING:
-    from pathlib import Path
+    from pathlib import Path  # pragma: no cover
 
 class ZipCompressor(ZipCompressorInterface):
     """
