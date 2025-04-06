@@ -1,16 +1,28 @@
+"""
+Funções auxiliares para leitura e validação de variáveis de ambiente.
+
+Este módulo fornece utilitários para acessar variáveis de ambiente
+com valores padrão seguros.
+"""
+
 import os
 
 def get_env_variable(var_name: str, default: str) -> str:
     """
-    Obtém uma variável de ambiente, garantindo que ela tenha um valor válido.
-    
-    :param var_name: Nome da variável de ambiente
-    :param default: Valor padrão caso a variável não esteja definida ou seja inválida
-    :return: Valor da variável de ambiente ou o padrão
+    Obtém o valor de uma variável de ambiente, com fallback para um valor padrão.
+
+    Se a variável não estiver definida ou estiver vazia, retorna o valor padrão fornecido.
+
+    Parâmetros:
+        var_name (str): Nome da variável de ambiente.
+        default (str): Valor padrão a ser utilizado caso a variável não esteja definida ou seja inválida.
+
+    Retorno:
+        str: Valor da variável de ambiente ou o valor padrão fornecido.
     """
     value = os.getenv(var_name)
     
-    if value is None or not value.strip():  # Garante que a variável não está vazia
+    if value is None or not value.strip():
         return default
 
     return value.strip()
