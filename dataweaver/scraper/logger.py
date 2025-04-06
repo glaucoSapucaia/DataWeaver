@@ -2,49 +2,40 @@ import logging
 from utils import ensure_directory_exists
 from log_config import LOG_FILE, ERROR_LOG_FILE, WARNING_LOG_FILE, LOG_DIR
 
-# Verificando existencia do diretório
+# Verificando existência do diretório de logs
 if not ensure_directory_exists(LOG_DIR):
     logging.error(f"Erro ao criar diretório {LOG_DIR}")
     exit(1)
 
 # ==================== INFO ====================
+# Logger principal para mensagens informativas e logs gerais
+logger = logging.getLogger("DataWeaver")
+logger.setLevel(logging.DEBUG)  # permite INFO, WARNING e ERROR
 
-logger = logging.getLogger("PDFProcessor")
-logger.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 
-file_handler = logging.FileHandler(LOG_FILE, encoding="utf-8")
-file_handler.setLevel(logging.INFO)
+# Handler INFO (grava INFO e acima)
+info_handler = logging.FileHandler(LOG_FILE, encoding="utf-8")
+info_handler.setLevel(logging.INFO)
+info_handler.setFormatter(formatter)
 
-stream_handler = logging.StreamHandler()
-stream_handler.setLevel(logging.INFO)
+# Handler WARNING
+warning_handler = logging.FileHandler(WARNING_LOG_FILE, encoding="utf-8")
+warning_handler.setLevel(logging.WARNING)
+warning_handler.setFormatter(formatter)
 
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-file_handler.setFormatter(formatter)
-stream_handler.setFormatter(formatter)
+# Handler ERROR
+error_handler = logging.FileHandler(ERROR_LOG_FILE, encoding="utf-8")
+error_handler.setLevel(logging.ERROR)
+error_handler.setFormatter(formatter)
 
-logger.addHandler(file_handler)
-logger.addHandler(stream_handler)
+# Console também
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(formatter)
 
-# ==================== ERROR ====================
-
-error_logger = logging.getLogger("PDFProcessorError")
-error_logger.setLevel(logging.ERROR)
-
-error_file_handler = logging.FileHandler(ERROR_LOG_FILE, encoding="utf-8")
-error_file_handler.setLevel(logging.ERROR)
-error_file_handler.setFormatter(formatter)
-
-error_logger.addHandler(error_file_handler)
-error_logger.propagate = False
-
-# ==================== WARNING ====================
-
-warning_logger = logging.getLogger("PDFProcessorWarning")
-warning_logger.setLevel(logging.WARNING)
-
-warning_file_handler = logging.FileHandler(WARNING_LOG_FILE, encoding="utf-8")
-warning_file_handler.setLevel(logging.WARNING)
-warning_file_handler.setFormatter(formatter)
-
-warning_logger.addHandler(warning_file_handler)
-warning_logger.propagate = False
+# Adiciona todos
+logger.addHandler(info_handler)
+logger.addHandler(warning_handler)
+logger.addHandler(error_handler)
+logger.addHandler(console_handler)

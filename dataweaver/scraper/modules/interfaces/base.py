@@ -1,8 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from bs4 import BeautifulSoup # type: ignore
 
 class PDFScraperInterface(ABC):
     """Interface para classes que extraem links de arquivos PDF de uma página web."""
