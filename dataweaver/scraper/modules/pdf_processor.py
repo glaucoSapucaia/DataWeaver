@@ -1,5 +1,6 @@
 from .interfaces import (FileManagerInterface, PDFProcessingServiceInterface,
                          PDFScraperInterface, ZipCompressorInterface, PDFRemoveInterface)
+from logger import logger
 
 class PDFProcessingService(PDFProcessingServiceInterface):
     def __init__(self, zip_name: str,
@@ -29,21 +30,28 @@ class PDFProcessingService(PDFProcessingServiceInterface):
             url (str): URL da página onde os PDFs estão localizados.
             keyword (str): Palavra-chave para filtrar os PDFs desejados.
         """
-        print("Buscando PDFs...")
-        pdf_links = self.scraper.get_pdf_links(url)
-        
-        if not pdf_links:
-            print("Nenhum PDF encontrado.")
-            return
-        
-        print("Baixando PDFs...")
-        for link in pdf_links:
-            self.file_manager.save_file(link)
-        
-        print("Compactando arquivos...")
-        self.zip_compressor.create_zip(self.zip_name)
+        try:
+            logger.info("Buscando PDFs...")
+            pdf_links = self.scraper.get_pdf_links(url)
+            
+            if not pdf_links:
+                logger.warning("Nenhum PDF encontrado.")
+                return
+            
+            logger.info("Baixando PDFs...")
+            for link in pdf_links:
+                try:
+                    self.file_manager.save_file(link)
+                except Exception as e:
+                    logger.error(f"Erro ao baixar o arquivo {link}: {e}")
+            
+            logger.info("Compactando arquivos...")
+            self.zip_compressor.create_zip(self.zip_name)
 
-        print('Excluindo arquivos baixados...')
-        self.pdf_remove.remove_pdfs()
+            logger.info("Excluindo arquivos baixados...")
+            self.pdf_remove.remove_pdfs()
+            
+            logger.info("Processo concluído com sucesso!")
         
-        print("Processo concluído!")
+        except Exception as e:
+            logger.exception(f"Erro durante o processamento dos PDFs: {e}")
