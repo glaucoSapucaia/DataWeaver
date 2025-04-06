@@ -10,12 +10,6 @@ O módulo cobre:
 - Requisições HTTP simuladas
 """
 
-from pathlib import Path
-import sys
-
-# Adiciona o diretório pai de 'tests_zip_compressor' ao sys.path, ou seja: o diretório 'scraper'
-sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
-
 import pytest                  # type: ignore
 from bs4 import BeautifulSoup  # type: ignore
 import requests                # type: ignore

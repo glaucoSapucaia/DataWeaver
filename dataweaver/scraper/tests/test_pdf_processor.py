@@ -7,12 +7,6 @@ Este conjunto de testes cobre:
 - Exceções durante o download, compactação e remoção de arquivos.
 """
 
-from pathlib import Path
-import sys
-
-# Adiciona o diretório pai de 'tests_zip_compressor' ao sys.path, ou seja: o diretório 'scraper'
-sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
-
 import pytest  # type: ignore
 from unittest.mock import Mock, patch
 from modules.pdf_processor import PDFProcessingService

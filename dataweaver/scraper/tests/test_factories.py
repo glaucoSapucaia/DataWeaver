@@ -6,12 +6,6 @@ Cobre:
 - Falha durante a criação de dependências.
 """
 
-from pathlib import Path
-import sys
-
-# Caminho para importar o módulo
-sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
-
 import pytest  # type: ignore
 from unittest.mock import patch
 from modules.factories import PDFProcessingServiceFactory

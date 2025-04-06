@@ -8,12 +8,6 @@ Cobre:
 - Verificação de logs.
 """
 
-from pathlib import Path
-import sys
-
-# Caminho para importar o módulo
-sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
-
 from requests.exceptions import RequestException  # type: ignore
 import pytest                                     # type: ignore
 from unittest.mock import patch, mock_open, MagicMock

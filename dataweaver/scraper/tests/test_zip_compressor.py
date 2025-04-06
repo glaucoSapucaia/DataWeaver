@@ -12,11 +12,6 @@ Dependências:
 """
 
 from pathlib import Path
-import sys
-
-# Adiciona o diretório pai de 'tests_zip_compressor' ao sys.path, ou seja: o diretório 'scraper'
-sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
-
 from unittest.mock import patch
 import pytest  # type: ignore
 import zipfile
