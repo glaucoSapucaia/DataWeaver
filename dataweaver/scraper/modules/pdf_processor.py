@@ -50,8 +50,6 @@ class PDFProcessingService(PDFProcessingServiceInterface):
 
             logger.info("Excluindo arquivos baixados...")
             self.pdf_remove.remove_pdfs()
-            
-            logger.info("Processo concluído com sucesso!")
         
         except Exception as e:
             logger.error(f"Erro durante o processamento dos PDFs: {e}")
