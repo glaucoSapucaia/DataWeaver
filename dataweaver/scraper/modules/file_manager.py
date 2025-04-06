@@ -9,7 +9,7 @@ import requests  # type: ignore
 import os
 
 if TYPE_CHECKING:
-    from pathlib import Path
+    from pathlib import Path  # pragma: no cover
 
 class FileManager(FileManagerInterface):
     """
