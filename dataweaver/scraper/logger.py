@@ -12,7 +12,7 @@ if not ensure_directory_exists(LOG_DIR):
 logger = logging.getLogger("PDFProcessor")
 logger.setLevel(logging.INFO)
 
-file_handler = logging.FileHandler(LOG_FILE)
+file_handler = logging.FileHandler(LOG_FILE, encoding="utf-8")
 file_handler.setLevel(logging.INFO)
 
 stream_handler = logging.StreamHandler()
@@ -30,7 +30,7 @@ logger.addHandler(stream_handler)
 error_logger = logging.getLogger("PDFProcessorError")
 error_logger.setLevel(logging.ERROR)
 
-error_file_handler = logging.FileHandler(ERROR_LOG_FILE)
+error_file_handler = logging.FileHandler(ERROR_LOG_FILE, encoding="utf-8")
 error_file_handler.setLevel(logging.ERROR)
 error_file_handler.setFormatter(formatter)
 
@@ -42,7 +42,7 @@ error_logger.propagate = False
 warning_logger = logging.getLogger("PDFProcessorWarning")
 warning_logger.setLevel(logging.WARNING)
 
-warning_file_handler = logging.FileHandler(WARNING_LOG_FILE)
+warning_file_handler = logging.FileHandler(WARNING_LOG_FILE, encoding="utf-8")
 warning_file_handler.setLevel(logging.WARNING)
 warning_file_handler.setFormatter(formatter)
 
