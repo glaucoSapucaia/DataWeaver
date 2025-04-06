@@ -7,7 +7,6 @@ from pathlib import Path
 from logger import logger
 from dotenv import load_dotenv # type: ignore
 from utils import get_env_variable, ensure_directory_exists
-from log_config import LOG_DIR
 
 # Carregando variáveis de ambiente
 load_dotenv()

@@ -2,7 +2,7 @@ from .interfaces import PDFScraperInterface, HttpClientInterface, PDFExtractorSt
 from logger import logger
 from bs4 import BeautifulSoup # type: ignore
 from urllib.parse import urljoin
-import requests
+import requests # type: ignore
 import re
 
 class RequestsPDFScraper(PDFScraperInterface):
