@@ -1,7 +1,8 @@
 from .interfaces import FileManagerInterface
 from typing import TYPE_CHECKING
 import os
-import requests
+import requests # type: ignore
+from logger import logger
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -26,11 +27,17 @@ class FileManager(FileManagerInterface):
             url (str): URL do arquivo a ser baixado.
         """
         file_name = os.path.join(self.folder, os.path.basename(url))
-        response = requests.get(url, stream=True)
-        response.raise_for_status()
-        
-        with open(file_name, 'wb') as file:
-            for chunk in response.iter_content(1024):
-                file.write(chunk)
-        
-        print(f"Baixado: {file_name}")
+        file_downloaded = os.path.basename(url)
+        try:
+            response = requests.get(url, stream=True)
+            response.raise_for_status()
+            
+            with open(file_name, 'wb') as file:
+                for chunk in response.iter_content(1024):
+                    file.write(chunk)
+            
+            logger.info(f"Arquivo baixado com sucesso: {file_downloaded[:10]}")
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Erro ao baixar o arquivo {url}: {e}")
+        except Exception as e:
+            logger.error(f"Erro ao salvar o arquivo {file_downloaded}: {e}")

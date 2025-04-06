@@ -54,4 +54,4 @@ class PDFProcessingService(PDFProcessingServiceInterface):
             logger.info("Processo concluído com sucesso!")
         
         except Exception as e:
-            logger.exception(f"Erro durante o processamento dos PDFs: {e}")
+            logger.error(f"Erro durante o processamento dos PDFs: {e}")

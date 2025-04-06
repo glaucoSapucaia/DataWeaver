@@ -37,7 +37,7 @@ class ZipCompressor(ZipCompressorInterface):
                 for file_path in self._get_pdf_files():
                     try:
                         zipf.write(file_path, file_path.relative_to(self.folder))
-                        logger.info(f"Arquivo adicionado: {file_path.name}")
+                        logger.info(f"Arquivo adicionado: {file_path.name[:10]}")
                     except Exception as e:
                         logger.warning(f"Erro ao adicionar {file_path.name} ao ZIP: {e}")
         except Exception as e:
@@ -62,7 +62,7 @@ class PDFRemove(PDFRemoveInterface):
             for pdf_file in self.folder.rglob("*.pdf"):
                 try:
                     pdf_file.unlink()
-                    logger.info(f"Arquivo excluído: {pdf_file.name}")
+                    logger.info(f"Arquivo excluído: {pdf_file.name[:10]}")
                 except Exception as e:
                     logger.warning(f"Erro ao excluir {pdf_file.name}: {e}")
         except Exception as e:
