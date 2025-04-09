@@ -8,7 +8,7 @@ como verificação da existência de diretórios.
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pathlib import Path
+    from pathlib import Path  # pragma: no cover
 
 def ensure_directory_exists(directory: 'Path') -> bool:
     """
