@@ -11,9 +11,9 @@ para instanciar o serviço de processamento de PDFs, que realiza as seguintes et
 Todos os eventos importantes são registrados no sistema de logging configurado.
 """
 
-from logger import logger
-from modules import PDFProcessingServiceFactory
-from config import URL
+from dataweaver.logger import logger
+from dataweaver.scraper.modules import PDFProcessingServiceFactory
+from dataweaver.config import URL
 
 if __name__ == "__main__":
     """

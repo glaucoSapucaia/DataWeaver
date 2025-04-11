@@ -6,12 +6,12 @@ Este módulo centraliza a criação de objetos como o scraper, gerenciador de ar
 compressor ZIP e removedor de PDFs, promovendo injeção de dependência e facilitando testes.
 """
 
-from modules import (
+from dataweaver.scraper.modules import (
     RequestsPDFScraper, FileManager, PDFRemove, ZipCompressor,
     PDFProcessingService, RequestsHttpClient, PDFLinkExtractor
 )
-from config import PDFS_DIR, ZIP_NAME, FILTER
-from logger import logger
+from dataweaver.config import PDFS_DIR, ZIP_NAME, FILTER
+from dataweaver.logger import logger
 
 class PDFProcessingServiceFactory:
     """

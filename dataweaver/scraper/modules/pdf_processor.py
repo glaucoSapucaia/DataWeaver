@@ -10,7 +10,7 @@ from .interfaces import (
     ZipCompressorInterface,
     PDFRemoveInterface,
 )
-from logger import logger
+from dataweaver.logger import logger
 
 class PDFProcessingService(PDFProcessingServiceInterface):
     """

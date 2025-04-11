@@ -18,8 +18,8 @@ de log recebam apenas mensagens de um nível exato.
 """
 
 import logging
-from utils import ensure_directory_exists
-from log_config import LOG_FILE, ERROR_LOG_FILE, WARNING_LOG_FILE, LOG_DIR
+from .scraper.utils import ensure_directory_exists
+from .log_config import LOG_FILE, ERROR_LOG_FILE, WARNING_LOG_FILE, LOG_DIR
 
 if not ensure_directory_exists(LOG_DIR):
     # Aqui usamos logging pois, "logger" ainda não existe!

@@ -8,7 +8,7 @@ Contém as classes:
 """
 
 from .interfaces import ZipCompressorInterface, PDFRemoveInterface
-from logger import logger
+from dataweaver.logger import logger
 from typing import TYPE_CHECKING
 import zipfile
 

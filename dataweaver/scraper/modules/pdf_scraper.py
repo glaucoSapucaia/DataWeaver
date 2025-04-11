@@ -9,7 +9,7 @@ Contém as classes:
 
 from .interfaces import PDFScraperInterface, HttpClientInterface, PDFExtractorStrategyInterface
 from urllib.parse import urljoin
-from logger import logger
+from dataweaver.logger import logger
 from bs4 import BeautifulSoup  # type: ignore
 import requests                # type: ignore
 import re
