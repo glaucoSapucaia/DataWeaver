@@ -18,13 +18,10 @@ de log recebam apenas mensagens de um nível exato.
 """
 
 import logging
-from utils import ensure_directory_exists
-from log_config import LOG_FILE, ERROR_LOG_FILE, WARNING_LOG_FILE, LOG_DIR
+from paths import LOG_FILE, ERROR_LOG_FILE, WARNING_LOG_FILE, LOG_DIR
 
-if not ensure_directory_exists(LOG_DIR):
-    # Aqui usamos logging pois, "logger" ainda não existe!
-    logging.error(f"Erro ao criar diretório {LOG_DIR}")
-    exit(1)
+if not LOG_DIR.exists() and not LOG_DIR.is_dir():
+    raise RuntimeError(f"Erro ao criar diretório {LOG_DIR}")
 
 # ==================== FILTRO DE NÍVEL EXATO ====================
 

@@ -10,8 +10,8 @@ import shutil
 from pathlib import Path
 from tempfile import mkdtemp
 
-from utils.directory_exists import ensure_directory_exists
-from utils.get_env import get_env_variable
+from dataweaver.scraper.utils.directory_exists import ensure_directory_exists
+from dataweaver.scraper.utils.get_env import get_env_variable
 
 # ────────────────────────────────────────────────────────────────
 # TESTES PARA A FUNÇÃO: ensure_directory_exists
@@ -52,7 +52,7 @@ def test_ensure_directory_exists_fails_with_invalid_path(monkeypatch):
     """
     Verifica se a função retorna False ao falhar na criação de um diretório.
     """
-    import utils
+    import dataweaver.scraper.utils
 
     # simula erro no mkdir
     def raise_exception(*args, **kwargs):
@@ -61,7 +61,7 @@ def test_ensure_directory_exists_fails_with_invalid_path(monkeypatch):
     monkeypatch.setattr("pathlib.Path.mkdir", raise_exception)
 
     path = Path("/caminho/qualquer")
-    resultado = utils.ensure_directory_exists(path)
+    resultado = dataweaver.scraper.utils.ensure_directory_exists(path)
 
     assert resultado is False
 

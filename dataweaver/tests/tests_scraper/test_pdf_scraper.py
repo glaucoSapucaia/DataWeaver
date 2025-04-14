@@ -14,7 +14,7 @@ import pytest                  # type: ignore
 from bs4 import BeautifulSoup  # type: ignore
 import requests                # type: ignore
 
-from modules.pdf_scraper import RequestsPDFScraper, PDFLinkExtractor, RequestsHttpClient
+from dataweaver.scraper.modules.pdf_scraper import RequestsPDFScraper, PDFLinkExtractor, RequestsHttpClient
 from unittest.mock import Mock, patch
 
 
@@ -82,7 +82,7 @@ def test_scraper_returns_empty_on_extraction_failure():
     
     scraper = RequestsPDFScraper(http_client=mock_http, extractor=broken_extractor)
 
-    with patch("modules.pdf_scraper.logger.error") as mock_log:
+    with patch("dataweaver.scraper.modules.pdf_scraper.logger.error") as mock_log:
         links = scraper.get_pdf_links("https://exemplo.com")
         assert links == []
         mock_log.assert_called()
@@ -99,7 +99,7 @@ def test_anchor_extraction_exception_logged(html_with_links):
     soup = BeautifulSoup(html_with_links, "html.parser")
 
     with patch("bs4.BeautifulSoup.find_all", side_effect=Exception("Erro")):
-        with patch("modules.pdf_scraper.logger.warning") as mock_warning:
+        with patch("dataweaver.scraper.modules.pdf_scraper.logger.warning") as mock_warning:
             links = extractor._extract_from_anchors(soup, "https://base.url")
             assert links == set()
             mock_warning.assert_called()
@@ -111,7 +111,7 @@ def test_paragraph_extraction_exception_logged(html_with_links):
     soup = BeautifulSoup(html_with_links, "html.parser")
 
     with patch("bs4.BeautifulSoup.find_all", side_effect=Exception("Erro")):
-        with patch("modules.pdf_scraper.logger.warning") as mock_warning:
+        with patch("dataweaver.scraper.modules.pdf_scraper.logger.warning") as mock_warning:
             links = extractor._extract_from_paragraphs(soup, "https://base.url")
             assert links == set()
             mock_warning.assert_called()
@@ -123,7 +123,7 @@ def test_extract_handles_exception_from_anchors():
     soup = BeautifulSoup("<html></html>", "html.parser")
     
     with patch.object(PDFLinkExtractor, '_extract_from_anchors', side_effect=Exception("Erro em anchors")), \
-        patch("modules.pdf_scraper.logger.error") as mock_logger:
+        patch("dataweaver.scraper.modules.pdf_scraper.logger.error") as mock_logger:
         
         result = extractor.extract(soup, "http://exemplo.com")
         assert result == []
@@ -137,7 +137,7 @@ def test_extract_handles_exception_from_paragraphs():
     soup = BeautifulSoup("<html><a href='relatorio.pdf'></a></html>", "html.parser")
 
     with patch.object(PDFLinkExtractor, '_extract_from_paragraphs', side_effect=Exception("Erro em paragrafos")), \
-        patch("modules.pdf_scraper.logger.error") as mock_logger:
+        patch("dataweaver.scraper.modules.pdf_scraper.logger.error") as mock_logger:
         
         result = extractor.extract(soup, "http://exemplo.com")
         assert result == []
@@ -151,7 +151,7 @@ def test_extract_handles_generic_exception():
     soup = BeautifulSoup("<html></html>", "html.parser")
 
     with patch.object(PDFLinkExtractor, '_extract_from_anchors', side_effect=Exception("Erro artificial")), \
-        patch("modules.pdf_scraper.logger.error") as mock_logger:
+        patch("dataweaver.scraper.modules.pdf_scraper.logger.error") as mock_logger:
 
         result = extractor.extract(soup, "http://exemplo.com")
         assert result == []
@@ -183,7 +183,7 @@ def test_http_client_raises_on_failure():
     
     with patch("requests.get", side_effect=requests.exceptions.RequestException("Erro")):
         client = RequestsHttpClient()
-        with patch("modules.pdf_scraper.logger.error") as mock_logger:
+        with patch("dataweaver.scraper.modules.pdf_scraper.logger.error") as mock_logger:
             with pytest.raises(Exception):
                 client.fetch_html("https://erro.com")
             assert mock_logger.called

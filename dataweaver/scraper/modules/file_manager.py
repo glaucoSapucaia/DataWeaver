@@ -4,7 +4,7 @@ Módulo responsável pelo gerenciamento de arquivos, incluindo download e salvam
 
 from .interfaces import FileManagerInterface
 from typing import TYPE_CHECKING
-from dataweaver.logger import logger
+from logger import logger
 import requests  # type: ignore
 import os
 

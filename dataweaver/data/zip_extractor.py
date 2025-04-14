@@ -1,5 +1,5 @@
-from config import PDF_ZIP_FILE, DESTINATION_FOLDER
-from utils import ensure_directory_exists
+from paths import PDF_ZIP_FILE, DESTINATION_FOLDER
+from dataweaver.scraper.utils import ensure_directory_exists
 from logger import logger
 import zipfile
 

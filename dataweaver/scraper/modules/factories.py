@@ -10,8 +10,8 @@ from dataweaver.scraper.modules import (
     RequestsPDFScraper, FileManager, PDFRemove, ZipCompressor,
     PDFProcessingService, RequestsHttpClient, PDFLinkExtractor
 )
-from dataweaver.config import PDFS_DIR, ZIP_NAME, FILTER
-from dataweaver.logger import logger
+from paths import PDFS_DIR, ZIP_NAME, FILTER
+from logger import logger
 
 class PDFProcessingServiceFactory:
     """
