@@ -11,7 +11,7 @@ Cobre:
 from requests.exceptions import RequestException  # type: ignore
 import pytest                                     # type: ignore
 from unittest.mock import patch, mock_open, MagicMock
-from modules.file_manager import FileManager
+from dataweaver.scraper.modules.file_manager import FileManager
 
 
 @pytest.fixture
@@ -33,9 +33,9 @@ def test_save_file_success(setup_file_manager):
     mock_response.iter_content.return_value = [b"chunk1", b"chunk2"]
     mock_response.raise_for_status.return_value = None
 
-    with patch("modules.file_manager.requests.get", return_value=mock_response) as mock_get, \
+    with patch("dataweaver.scraper.modules.file_manager.requests.get", return_value=mock_response) as mock_get, \
          patch("builtins.open", mock_open()) as mock_file, \
-         patch("modules.file_manager.logger.info") as mock_log:
+         patch("dataweaver.scraper.modules.file_manager.logger.info") as mock_log:
 
         file_manager.save_file(fake_url)
 
@@ -56,8 +56,8 @@ def test_save_file_request_exception(setup_file_manager):
     file_manager, _ = setup_file_manager
     fake_url = "http://example.com/fail.pdf"
 
-    with patch("modules.file_manager.requests.get", side_effect=RequestException("Erro de rede")), \
-         patch("modules.file_manager.logger.error") as mock_log:
+    with patch("dataweaver.scraper.modules.file_manager.requests.get", side_effect=RequestException("Erro de rede")), \
+         patch("dataweaver.scraper.modules.file_manager.logger.error") as mock_log:
 
         file_manager.save_file(fake_url)
         assert mock_log.called
@@ -75,8 +75,8 @@ def test_save_file_raise_for_status(setup_file_manager):
     mock_response = MagicMock()
     mock_response.raise_for_status.side_effect = RequestException("Erro HTTP")
 
-    with patch("modules.file_manager.requests.get", return_value=mock_response), \
-         patch("modules.file_manager.logger.error") as mock_log:
+    with patch("dataweaver.scraper.modules.file_manager.requests.get", return_value=mock_response), \
+         patch("dataweaver.scraper.modules.file_manager.logger.error") as mock_log:
 
         file_manager.save_file(fake_url)
         assert mock_log.called
@@ -95,9 +95,9 @@ def test_save_file_write_error(setup_file_manager):
     mock_response.iter_content.return_value = [b"chunk"]
     mock_response.raise_for_status.return_value = None
 
-    with patch("modules.file_manager.requests.get", return_value=mock_response), \
+    with patch("dataweaver.scraper.modules.file_manager.requests.get", return_value=mock_response), \
          patch("builtins.open", side_effect=OSError("Falha ao escrever")), \
-         patch("modules.file_manager.logger.error") as mock_log:
+         patch("dataweaver.scraper.modules.file_manager.logger.error") as mock_log:
 
         file_manager.save_file(fake_url)
         assert mock_log.called

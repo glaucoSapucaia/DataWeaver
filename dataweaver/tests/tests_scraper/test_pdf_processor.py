@@ -9,7 +9,7 @@ Este conjunto de testes cobre:
 
 import pytest  # type: ignore
 from unittest.mock import Mock, patch
-from modules.pdf_processor import PDFProcessingService
+from dataweaver.scraper.modules.pdf_processor import PDFProcessingService
 
 
 # === FIXTURE DE SETUP PADRÃO ===
@@ -91,7 +91,7 @@ def test_process_logs_error_if_zip_creation_fails(setup_service):
     scraper.get_pdf_links.return_value = ["http://site.com/a.pdf"]
     compressor.create_zip.side_effect = Exception("Erro de zip")
 
-    with patch("modules.pdf_processor.logger.error") as mock_log:
+    with patch("dataweaver.scraper.modules.pdf_processor.logger.error") as mock_log:
         service.process("http://site.com")
         assert mock_log.called
         assert "Erro durante o processamento" in mock_log.call_args[0][0]
@@ -105,7 +105,7 @@ def test_process_logs_error_if_pdf_removal_fails(setup_service):
     scraper.get_pdf_links.return_value = ["http://site.com/a.pdf"]
     remove.remove_pdfs.side_effect = Exception("Erro ao remover")
 
-    with patch("modules.pdf_processor.logger.error") as mock_log:
+    with patch("dataweaver.scraper.modules.pdf_processor.logger.error") as mock_log:
         service.process("http://site.com")
         assert mock_log.called
         assert "Erro durante o processamento" in mock_log.call_args[0][0]
@@ -118,7 +118,7 @@ def test_process_logs_error_if_scraper_fails(setup_service):
     service, scraper, _, _, _ = setup_service
     scraper.get_pdf_links.side_effect = Exception("Falha no scraping")
 
-    with patch("modules.pdf_processor.logger.error") as mock_log:
+    with patch("dataweaver.scraper.modules.pdf_processor.logger.error") as mock_log:
         service.process("http://site.com")
         assert mock_log.called
         assert "Erro durante o processamento" in mock_log.call_args[0][0]

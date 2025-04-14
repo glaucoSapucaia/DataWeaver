@@ -15,7 +15,7 @@ from pathlib import Path
 from unittest.mock import patch
 import pytest  # type: ignore
 import zipfile
-from modules.zip_compressor import ZipCompressor, PDFRemove
+from dataweaver.scraper.modules.zip_compressor import ZipCompressor, PDFRemove
 
 # === FIXTURES ===
 
@@ -195,7 +195,7 @@ def test_logger_error_on_create_zip(tmp_path):
     """
     compressor = ZipCompressor(folder=tmp_path)
 
-    with patch("modules.zip_compressor.logger.error") as mock_logger:
+    with patch("dataweaver.scraper.modules.zip_compressor.logger.error") as mock_logger:
         with patch.object(compressor, "_get_zip_path", side_effect=Exception("Falha")):
             compressor.create_zip("erro.zip")
             mock_logger.assert_called()
@@ -211,7 +211,7 @@ def test_logger_warning_on_write_pdf_error(tmp_path):
     zip_path = tmp_path / "log.zip"
 
     with patch.object(Path, "relative_to", side_effect=Exception("erro")):
-        with patch("modules.zip_compressor.logger.warning") as mock_warning:
+        with patch("dataweaver.scraper.modules.zip_compressor.logger.warning") as mock_warning:
             compressor._compress_files(zip_path)
             assert mock_warning.called
 
@@ -225,7 +225,7 @@ def test_logger_warning_on_pdf_remove(tmp_path):
     remover = PDFRemove(folder=tmp_path)
 
     with patch.object(Path, "unlink", side_effect=Exception("erro")):
-        with patch("modules.zip_compressor.logger.warning") as mock_warning:
+        with patch("dataweaver.scraper.modules.zip_compressor.logger.warning") as mock_warning:
             remover.remove_pdfs()
             assert mock_warning.called
 
@@ -237,7 +237,7 @@ def test_logger_error_on_pdf_search(tmp_path):
     remover = PDFRemove(folder=tmp_path)
 
     with patch("pathlib.Path.rglob", side_effect=Exception("Erro")):
-        with patch("modules.zip_compressor.logger.error") as mock_error:
+        with patch("dataweaver.scraper.modules.zip_compressor.logger.error") as mock_error:
             remover.remove_pdfs()
             assert mock_error.called
 
@@ -249,6 +249,6 @@ def test_logger_error_on_pdf_discovery(tmp_path):
     compressor = ZipCompressor(folder=tmp_path)
 
     with patch("pathlib.Path.rglob", side_effect=Exception("Erro")):
-        with patch("modules.zip_compressor.logger.error") as mock_error:
+        with patch("dataweaver.scraper.modules.zip_compressor.logger.error") as mock_error:
             compressor._get_pdf_files()
             assert mock_error.called

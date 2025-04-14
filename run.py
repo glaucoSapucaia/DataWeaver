@@ -12,8 +12,8 @@ Todos os eventos importantes são registrados no sistema de logging configurado.
 """
 
 from logger import logger
-from modules import PDFProcessingServiceFactory
-from config import URL
+from dataweaver.scraper.modules import PDFProcessingServiceFactory
+from paths import URL
 
 if __name__ == "__main__":
     """

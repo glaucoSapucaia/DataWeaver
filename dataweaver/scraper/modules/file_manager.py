@@ -48,7 +48,7 @@ class FileManager(FileManagerInterface):
                 for chunk in response.iter_content(1024):
                     file.write(chunk)
 
-            logger.info(f"Arquivo baixado com sucesso: {file_downloaded[:10]}")
+            logger.info(f"Arquivo baixado com sucesso: {file_downloaded[:30]}")
         except requests.exceptions.RequestException as e:
             logger.error(f"Erro ao baixar o arquivo {url}: {e}")
         except Exception as e:
