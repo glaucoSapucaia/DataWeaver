@@ -1,6 +1,7 @@
-from dataweaver.config.logger import logger
+from dataweaver.settings import *
 from dataweaver.scraper.modules import PDFProcessingServiceFactory
-from dataweaver.config.paths import URL
+
+url = config.scraper.url
 
 if __name__ == "__main__":
     """
@@ -14,5 +15,5 @@ if __name__ == "__main__":
     service = PDFProcessingServiceFactory.create()
 
     logger.info("Executando o processo de coleta e compactação dos PDFs...")
-    service.process(URL)
+    service.process(url)
     logger.info("Processamento concluído!")

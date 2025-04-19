@@ -1,21 +1,13 @@
-"""
-Módulo responsável por realizar scraping de arquivos PDF a partir de uma página HTML.
-
-Contém as classes:
-- RequestsPDFScraper: usa um cliente HTTP para buscar o HTML e extrair links de PDF.
-- PDFLinkExtractor: estratégia para extrair links de PDF com base em palavras-chave.
-- RequestsHttpClient: implementação do cliente HTTP usando a biblioteca `requests`.
-"""
-
 from .interfaces import (
     PDFScraperInterface,
     HttpClientInterface,
     PDFExtractorStrategyInterface,
 )
+from dataweaver.settings import logger
+
 from urllib.parse import urljoin
-from dataweaver.config.logger import logger
-from bs4 import BeautifulSoup  # type: ignore
-import requests  # type: ignore
+from bs4 import BeautifulSoup
+import requests
 import re
 
 

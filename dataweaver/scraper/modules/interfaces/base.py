@@ -1,17 +1,8 @@
-"""
-Este módulo define interfaces (ABCs) que padronizam a implementação de funcionalidades
-relacionadas à extração, download, compressão e remoção de arquivos PDF, bem como
-a comunicação HTTP necessária para essas operações.
-
-Cada interface descreve contratos que devem ser seguidos pelas implementações concretas,
-garantindo consistência e modularidade no sistema.
-"""
-
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from bs4 import BeautifulSoup  # type: ignore
+    from bs4 import BeautifulSoup
 
 
 class PDFScraperInterface(ABC):
@@ -105,7 +96,7 @@ class PDFExtractorStrategyInterface(ABC):
     """Interface para estratégias de extração de links de PDFs a partir do conteúdo HTML de uma página."""
 
     @abstractmethod
-    def extract(self, soup: 'BeautifulSoup', base_url: str) -> list[str]:
+    def extract(self, soup: "BeautifulSoup", base_url: str) -> list[str]:
         """
         Extrai links de arquivos PDF a partir do conteúdo HTML da página.
 

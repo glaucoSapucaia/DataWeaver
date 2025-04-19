@@ -1,18 +1,11 @@
-"""
-Testes para o serviço de processamento de PDFs.
-
-Este conjunto de testes cobre:
-- Execução do fluxo completo com links válidos.
-- Cenários onde não há PDFs.
-- Exceções durante o download, compactação e remoção de arquivos.
-"""
-
-import pytest  # type: ignore
-from unittest.mock import Mock, patch
 from dataweaver.scraper.modules.pdf_processor import PDFProcessingService
+
+import pytest
+from unittest.mock import Mock, patch
 
 
 # === FIXTURE DE SETUP PADRÃO ===
+
 
 @pytest.fixture
 def setup_service():
@@ -26,20 +19,30 @@ def setup_service():
         scraper=mock_scraper,
         file_manager=mock_file_manager,
         zip_compressor=mock_zip_compressor,
-        pdf_remove=mock_pdf_remove
+        pdf_remove=mock_pdf_remove,
     )
 
-    return service, mock_scraper, mock_file_manager, mock_zip_compressor, mock_pdf_remove
+    return (
+        service,
+        mock_scraper,
+        mock_file_manager,
+        mock_zip_compressor,
+        mock_pdf_remove,
+    )
 
 
 # === TESTES FUNCIONAIS ===
+
 
 def test_process_executes_all_steps(setup_service):
     """
     Verifica se o processo completo é executado quando há links de PDFs.
     """
     service, scraper, file_manager, compressor, remove = setup_service
-    scraper.get_pdf_links.return_value = ["http://site.com/a.pdf", "http://site.com/b.pdf"]
+    scraper.get_pdf_links.return_value = [
+        "http://site.com/a.pdf",
+        "http://site.com/b.pdf",
+    ]
 
     service.process("http://site.com")
 
@@ -66,12 +69,16 @@ def test_process_handles_no_links(setup_service):
 
 # === TESTES DE EXCEÇÕES ===
 
+
 def test_process_continues_if_file_download_fails(setup_service):
     """
     Verifica se o processo continua mesmo se o download de um arquivo falhar.
     """
     service, scraper, file_manager, compressor, remove = setup_service
-    scraper.get_pdf_links.return_value = ["http://site.com/a.pdf", "http://site.com/b.pdf"]
+    scraper.get_pdf_links.return_value = [
+        "http://site.com/a.pdf",
+        "http://site.com/b.pdf",
+    ]
 
     # Simula erro no primeiro download
     file_manager.save_file.side_effect = [Exception("Falha no download"), None]

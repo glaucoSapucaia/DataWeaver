@@ -1,11 +1,3 @@
-"""
-Define a classe PDFProcessingServiceFactory, responsável por instanciar e configurar
-todas as dependências necessárias para o serviço de processamento de arquivos PDF.
-
-Este módulo centraliza a criação de objetos como o scraper, gerenciador de arquivos,
-compressor ZIP e removedor de PDFs, promovendo injeção de dependência e facilitando testes.
-"""
-
 from dataweaver.scraper.modules import (
     RequestsPDFScraper,
     FileManager,
@@ -15,8 +7,11 @@ from dataweaver.scraper.modules import (
     RequestsHttpClient,
     PDFLinkExtractor,
 )
-from dataweaver.config.paths import PDFS_DIR, ZIP_NAME, FILTER
-from dataweaver.config.logger import logger
+from dataweaver.settings import *
+
+pdfs_dir = config.dirs.pdfs
+zip_name = config.scraper.zip_name
+key_filter = config.scraper.filter
 
 
 class PDFProcessingServiceFactory:
@@ -35,15 +30,15 @@ class PDFProcessingServiceFactory:
         """
         try:
             http_client = RequestsHttpClient()
-            extractor = PDFLinkExtractor(FILTER)
+            extractor = PDFLinkExtractor(key_filter)
             scraper = RequestsPDFScraper(http_client, extractor)
-            file_manager = FileManager(PDFS_DIR)
-            remove_pdf = PDFRemove(PDFS_DIR)
-            zip_compressor = ZipCompressor(PDFS_DIR)
+            file_manager = FileManager(pdfs_dir)
+            remove_pdf = PDFRemove(pdfs_dir)
+            zip_compressor = ZipCompressor(pdfs_dir)
 
             logger.info("Serviço de processamento de PDFs criado com sucesso.")
             return PDFProcessingService(
-                ZIP_NAME, scraper, file_manager, zip_compressor, remove_pdf
+                zip_name, scraper, file_manager, zip_compressor, remove_pdf
             )
 
         except Exception as e:

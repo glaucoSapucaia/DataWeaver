@@ -1,23 +1,13 @@
-"""
-Testes para os componentes `ZipCompressor` e `PDFRemove` do módulo `zip_compressor`.
-
-Este módulo testa a compressão de arquivos PDF em um diretório em um arquivo `.zip`
-e a remoção de arquivos PDF de um diretório. Inclui testes de funcionalidade e testes
-para tratamento de exceções e registro de logs.
-
-Dependências:
-- pytest
-- unittest.mock
-- modules.zip_compressor
-"""
+from dataweaver.scraper.modules.zip_compressor import ZipCompressor, PDFRemove
 
 from pathlib import Path
 from unittest.mock import patch
-import pytest  # type: ignore
+import pytest
 import zipfile
-from dataweaver.scraper.modules.zip_compressor import ZipCompressor, PDFRemove
+
 
 # === FIXTURES ===
+
 
 @pytest.fixture
 def pdf_files(tmp_path):
@@ -31,11 +21,12 @@ def pdf_files(tmp_path):
 
     for pdf in [pdf1, pdf2, pdf3]:
         pdf.write_text("Conteúdo PDF de teste")
-        
+
     return tmp_path
 
 
 # === TESTES FUNCIONAIS ===
+
 
 def test_zip_compressor_create_zip(pdf_files):
     """
@@ -48,9 +39,9 @@ def test_zip_compressor_create_zip(pdf_files):
     compressor.create_zip(zip_name)
     assert zip_path.exists()
 
-    with zipfile.ZipFile(zip_path, 'r') as zipf:
+    with zipfile.ZipFile(zip_path, "r") as zipf:
         zip_contents = zipf.namelist()
-        expected_files = ['file1.pdf', 'file2.pdf', 'subdir/file3.pdf']
+        expected_files = ["file1.pdf", "file2.pdf", "subdir/file3.pdf"]
         for file in expected_files:
             assert file in zip_contents
 
@@ -66,7 +57,7 @@ def test_zip_compressor_empty_folder(tmp_path):
     compressor.create_zip(zip_name)
     assert zip_path.exists()
 
-    with zipfile.ZipFile(zip_path, 'r') as zipf:
+    with zipfile.ZipFile(zip_path, "r") as zipf:
         assert zipf.namelist() == []
 
 
@@ -91,13 +82,14 @@ def test_pdf_remove_with_no_pdfs(tmp_path):
 
 # === TESTES DE EXCEÇÕES (ZipCompressor) ===
 
+
 def test_create_zip_logs_error(tmp_path):
     """
     Testa se erro durante a obtenção do caminho do ZIP é capturado e logado.
     """
     compressor = ZipCompressor(folder=tmp_path)
 
-    with patch.object(compressor, '_get_zip_path', side_effect=Exception("Falha")):
+    with patch.object(compressor, "_get_zip_path", side_effect=Exception("Falha")):
         compressor.create_zip("erro.zip")  # Não deve lançar exceção
 
 
@@ -139,6 +131,7 @@ def test_get_pdf_files_exception_logs(tmp_path):
 
 # === TESTES DE EXCEÇÕES (PDFRemove) ===
 
+
 def test_pdf_remove_rglob_error(tmp_path):
     """
     Verifica se erro ao buscar arquivos com `rglob` é tratado sem falhar.
@@ -163,6 +156,7 @@ def test_pdf_remove_unlink_error(tmp_path):
 
 # === TESTES COM MOCAGEM DE FALHAS ===
 
+
 def test_zip_file_write_error(pdf_files):
     """
     Verifica se erro ao escrever arquivos no ZIP é tratado.
@@ -171,7 +165,9 @@ def test_zip_file_write_error(pdf_files):
     zip_path = pdf_files / "fail.zip"
     pdfs = list(pdf_files.rglob("*.pdf"))
 
-    with patch.object(zipfile.ZipFile, "write", side_effect=Exception("Erro ao escrever")):
+    with patch.object(
+        zipfile.ZipFile, "write", side_effect=Exception("Erro ao escrever")
+    ):
         with patch.object(compressor, "_get_pdf_files", return_value=pdfs):
             compressor._compress_files(zip_path)
 
@@ -188,6 +184,7 @@ def test_zip_get_zip_path_type_error(tmp_path):
 
 
 # === TESTES DE LOGGERS ===
+
 
 def test_logger_error_on_create_zip(tmp_path):
     """
@@ -211,7 +208,9 @@ def test_logger_warning_on_write_pdf_error(tmp_path):
     zip_path = tmp_path / "log.zip"
 
     with patch.object(Path, "relative_to", side_effect=Exception("erro")):
-        with patch("dataweaver.scraper.modules.zip_compressor.logger.warning") as mock_warning:
+        with patch(
+            "dataweaver.scraper.modules.zip_compressor.logger.warning"
+        ) as mock_warning:
             compressor._compress_files(zip_path)
             assert mock_warning.called
 
@@ -225,7 +224,9 @@ def test_logger_warning_on_pdf_remove(tmp_path):
     remover = PDFRemove(folder=tmp_path)
 
     with patch.object(Path, "unlink", side_effect=Exception("erro")):
-        with patch("dataweaver.scraper.modules.zip_compressor.logger.warning") as mock_warning:
+        with patch(
+            "dataweaver.scraper.modules.zip_compressor.logger.warning"
+        ) as mock_warning:
             remover.remove_pdfs()
             assert mock_warning.called
 
@@ -237,7 +238,9 @@ def test_logger_error_on_pdf_search(tmp_path):
     remover = PDFRemove(folder=tmp_path)
 
     with patch("pathlib.Path.rglob", side_effect=Exception("Erro")):
-        with patch("dataweaver.scraper.modules.zip_compressor.logger.error") as mock_error:
+        with patch(
+            "dataweaver.scraper.modules.zip_compressor.logger.error"
+        ) as mock_error:
             remover.remove_pdfs()
             assert mock_error.called
 
@@ -249,6 +252,8 @@ def test_logger_error_on_pdf_discovery(tmp_path):
     compressor = ZipCompressor(folder=tmp_path)
 
     with patch("pathlib.Path.rglob", side_effect=Exception("Erro")):
-        with patch("dataweaver.scraper.modules.zip_compressor.logger.error") as mock_error:
+        with patch(
+            "dataweaver.scraper.modules.zip_compressor.logger.error"
+        ) as mock_error:
             compressor._get_pdf_files()
             assert mock_error.called

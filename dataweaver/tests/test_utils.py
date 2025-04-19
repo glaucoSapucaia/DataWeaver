@@ -1,21 +1,15 @@
-"""
-Testes unitários para funções utilitárias do projeto.
-
-Este módulo testa:
-- ensure_directory_exists (criação e verificação de diretórios)
-- get_env_variable (leitura segura de variáveis de ambiente)
-"""
+from dataweaver.utils import *
 
 import shutil
+import pytest
 from pathlib import Path
 from tempfile import mkdtemp
 
-from dataweaver.scraper.utils.directory_exists import ensure_directory_exists
-from dataweaver.scraper.utils.get_env import get_env_variable
 
 # ────────────────────────────────────────────────────────────────
 # TESTES PARA A FUNÇÃO: ensure_directory_exists
 # ────────────────────────────────────────────────────────────────
+
 
 def test_ensure_directory_exists_creates_new_directory():
     """
@@ -49,25 +43,23 @@ def test_ensure_directory_exists_existing_directory():
 
 
 def test_ensure_directory_exists_fails_with_invalid_path(monkeypatch):
-    """
-    Verifica se a função retorna False ao falhar na criação de um diretório.
-    """
-    import dataweaver.scraper.utils
+    """Verifica se a função levanta exceção ao falhar na criação"""
 
-    # simula erro no mkdir
     def raise_exception(*args, **kwargs):
         raise PermissionError("Acesso negado")
 
     monkeypatch.setattr("pathlib.Path.mkdir", raise_exception)
 
     path = Path("/caminho/qualquer")
-    resultado = dataweaver.scraper.utils.ensure_directory_exists(path)
 
-    assert resultado is False
+    with pytest.raises(RuntimeError):
+        ensure_directory_exists(path)
+
 
 # ────────────────────────────────────────────────────────────────
 # TESTES PARA A FUNÇÃO: get_env_variable
 # ────────────────────────────────────────────────────────────────
+
 
 def test_get_env_variable_returns_env_value(monkeypatch):
     """

@@ -1,15 +1,12 @@
-"""
-Módulo responsável pelo gerenciamento de arquivos, incluindo download e salvamento local.
-"""
-
 from .interfaces import FileManagerInterface
+from dataweaver.settings import logger
+
 from typing import TYPE_CHECKING
-from dataweaver.config.logger import logger
-import requests  # type: ignore
+import requests
 import os
 
 if TYPE_CHECKING:
-    from pathlib import Path  # pragma: no cover
+    from pathlib import Path
 
 
 class FileManager(FileManagerInterface):

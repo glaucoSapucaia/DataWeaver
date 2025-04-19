@@ -1,8 +1,3 @@
-"""
-Módulo responsável por orquestrar o processo completo de obtenção, download,
-compactação e limpeza de arquivos PDF a partir de uma URL.
-"""
-
 from .interfaces import (
     FileManagerInterface,
     PDFProcessingServiceInterface,
@@ -10,7 +5,7 @@ from .interfaces import (
     ZipCompressorInterface,
     PDFRemoveInterface,
 )
-from dataweaver.config.logger import logger
+from dataweaver.settings import logger
 
 
 class PDFProcessingService(PDFProcessingServiceInterface):

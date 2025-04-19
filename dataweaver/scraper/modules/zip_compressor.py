@@ -1,19 +1,11 @@
-"""
-Módulo responsável pela compactação de arquivos PDF em um único arquivo ZIP
-e pela remoção dos PDFs após o processo.
-
-Contém as classes:
-- ZipCompressor: compacta arquivos PDF encontrados em um diretório.
-- PDFRemove: remove arquivos PDF de um diretório.
-"""
-
 from .interfaces import ZipCompressorInterface, PDFRemoveInterface
-from dataweaver.config.logger import logger
+from dataweaver.settings import logger
+
 from typing import TYPE_CHECKING
 import zipfile
 
 if TYPE_CHECKING:
-    from pathlib import Path  # pragma: no cover
+    from pathlib import Path
 
 
 class ZipCompressor(ZipCompressorInterface):
@@ -68,7 +60,7 @@ class ZipCompressor(ZipCompressorInterface):
                 for file_path in self._get_pdf_files():
                     try:
                         zipf.write(file_path, file_path.relative_to(self.folder))
-                        logger.info(f"Arquivo adicionado: {file_path.name[:10]}")
+                        logger.info(f"Arquivo adicionado: {file_path.name[:30]}")
                     except Exception as e:
                         logger.warning(
                             f"Erro ao adicionar {file_path.name} ao ZIP: {e}"
@@ -113,7 +105,7 @@ class PDFRemove(PDFRemoveInterface):
             for pdf_file in self.folder.rglob("*.pdf"):
                 try:
                     pdf_file.unlink()
-                    logger.info(f"Arquivo excluído: {pdf_file.name[:10]}")
+                    logger.info(f"Arquivo excluído: {pdf_file.name[:30]}")
                 except Exception as e:
                     logger.warning(f"Erro ao excluir {pdf_file.name}: {e}")
         except Exception as e:
