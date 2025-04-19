@@ -1,131 +1,147 @@
-from dataweaver.scraper.modules.pdf_processor import PDFProcessingService
-
 import pytest
-from unittest.mock import Mock, patch
-
-
-# === FIXTURE DE SETUP PADRÃO ===
+from unittest.mock import MagicMock, patch
+from dataweaver.settings import logger
+from dataweaver.scraper.modules import PDFProcessingService
+from dataweaver.scraper.modules.interfaces import (
+    PDFProcessingServiceInterface,
+    PDFScraperInterface,
+    FileManagerInterface,
+    ZipCompressorInterface,
+    PDFRemoveInterface,
+)
 
 
 @pytest.fixture
-def setup_service():
-    mock_scraper = Mock()
-    mock_file_manager = Mock()
-    mock_zip_compressor = Mock()
-    mock_pdf_remove = Mock()
+def mock_dependencies():
+    """Retorna mocks de todas as dependências do serviço"""
+    return {
+        "scraper": MagicMock(spec=PDFScraperInterface),
+        "file_manager": MagicMock(spec=FileManagerInterface),
+        "zip_compressor": MagicMock(spec=ZipCompressorInterface),
+        "pdf_remove": MagicMock(spec=PDFRemoveInterface),
+    }
 
-    service = PDFProcessingService(
-        zip_name="teste.zip",
-        scraper=mock_scraper,
-        file_manager=mock_file_manager,
-        zip_compressor=mock_zip_compressor,
-        pdf_remove=mock_pdf_remove,
+
+@pytest.fixture
+def processing_service(mock_dependencies):
+    """Instância do serviço com dependências mockadas"""
+    return PDFProcessingService(
+        zip_name="test.zip",
+        scraper=mock_dependencies["scraper"],
+        file_manager=mock_dependencies["file_manager"],
+        zip_compressor=mock_dependencies["zip_compressor"],
+        pdf_remove=mock_dependencies["pdf_remove"],
     )
 
-    return (
-        service,
-        mock_scraper,
-        mock_file_manager,
-        mock_zip_compressor,
-        mock_pdf_remove,
-    )
 
+class TestPDFProcessingService:
+    def test_initialization(self, processing_service, mock_dependencies):
+        """Testa se o serviço é inicializado corretamente"""
+        assert isinstance(processing_service, PDFProcessingServiceInterface)
+        assert processing_service.zip_name == "test.zip"
+        assert processing_service.scraper == mock_dependencies["scraper"]
+        assert processing_service.file_manager == mock_dependencies["file_manager"]
+        assert processing_service.zip_compressor == mock_dependencies["zip_compressor"]
+        assert processing_service.pdf_remove == mock_dependencies["pdf_remove"]
 
-# === TESTES FUNCIONAIS ===
+    @patch.object(logger, "info")
+    @patch.object(logger, "warning")
+    def test_process_no_pdfs_found(
+        self, mock_warning, mock_info, processing_service, mock_dependencies
+    ):
+        """Testa o fluxo quando nenhum PDF é encontrado"""
+        mock_dependencies["scraper"].get_pdf_links.return_value = []
 
+        processing_service.process("http://example.com")
 
-def test_process_executes_all_steps(setup_service):
-    """
-    Verifica se o processo completo é executado quando há links de PDFs.
-    """
-    service, scraper, file_manager, compressor, remove = setup_service
-    scraper.get_pdf_links.return_value = [
-        "http://site.com/a.pdf",
-        "http://site.com/b.pdf",
-    ]
+        mock_dependencies["scraper"].get_pdf_links.assert_called_once_with(
+            "http://example.com"
+        )
+        mock_warning.assert_called_with("Nenhum PDF encontrado.")
+        mock_dependencies["file_manager"].save_file.assert_not_called()
+        mock_info.assert_any_call("Buscando PDFs...")
 
-    service.process("http://site.com")
+    @patch.object(logger, "info")
+    @patch.object(logger, "error")
+    def test_process_success_flow(
+        self, mock_error, mock_info, processing_service, mock_dependencies
+    ):
+        """Testa o fluxo completo bem-sucedido"""
+        pdf_links = ["http://example.com/1.pdf", "http://example.com/2.pdf"]
+        mock_dependencies["scraper"].get_pdf_links.return_value = pdf_links
 
-    assert scraper.get_pdf_links.called
-    assert file_manager.save_file.call_count == 2
-    assert compressor.create_zip.called
-    assert remove.remove_pdfs.called
+        processing_service.process("http://example.com")
 
+        # Verifica o fluxo principal
+        mock_dependencies["scraper"].get_pdf_links.assert_called_once_with(
+            "http://example.com"
+        )
+        assert mock_dependencies["file_manager"].save_file.call_count == len(pdf_links)
+        mock_dependencies["zip_compressor"].create_zip.assert_called_once_with(
+            "test.zip"
+        )
+        mock_dependencies["pdf_remove"].remove_pdfs.assert_called_once()
 
-def test_process_handles_no_links(setup_service):
-    """
-    Verifica se o processo é encerrado corretamente quando nenhum link é retornado.
-    """
-    service, scraper, file_manager, compressor, remove = setup_service
-    scraper.get_pdf_links.return_value = []
+        # Verifica os logs
+        mock_info.assert_any_call("Buscando PDFs...")
+        mock_info.assert_any_call("Baixando PDFs...")
+        mock_info.assert_any_call("Compactando arquivos...")
+        mock_info.assert_any_call("Excluindo arquivos baixados...")
+        mock_error.assert_not_called()
 
-    service.process("http://site.com")
+    @patch.object(logger, "error")
+    def test_process_download_error(
+        self, mock_error, processing_service, mock_dependencies
+    ):
+        """Testa quando ocorre erro no download de um PDF"""
+        pdf_links = ["http://example.com/1.pdf", "http://example.com/2.pdf"]
+        mock_dependencies["scraper"].get_pdf_links.return_value = pdf_links
+        mock_dependencies["file_manager"].save_file.side_effect = [
+            None,
+            Exception("Download failed"),
+        ]
 
-    assert scraper.get_pdf_links.called
-    file_manager.save_file.assert_not_called()
-    compressor.create_zip.assert_not_called()
-    remove.remove_pdfs.assert_not_called()
+        processing_service.process("http://example.com")
 
+        # Verifica que continuou o fluxo apesar do erro
+        mock_dependencies["zip_compressor"].create_zip.assert_called_once()
+        mock_dependencies["pdf_remove"].remove_pdfs.assert_called_once()
+        mock_error.assert_called_with(
+            "Erro ao baixar o arquivo http://example.com/2.pdf: Download failed"
+        )
 
-# === TESTES DE EXCEÇÕES ===
+    @patch.object(logger, "error")
+    def test_process_scraper_error(
+        self, mock_error, processing_service, mock_dependencies
+    ):
+        """Testa quando ocorre erro na fase de scraping"""
+        mock_dependencies["scraper"].get_pdf_links.side_effect = Exception(
+            "Scraping failed"
+        )
 
+        processing_service.process("http://example.com")
 
-def test_process_continues_if_file_download_fails(setup_service):
-    """
-    Verifica se o processo continua mesmo se o download de um arquivo falhar.
-    """
-    service, scraper, file_manager, compressor, remove = setup_service
-    scraper.get_pdf_links.return_value = [
-        "http://site.com/a.pdf",
-        "http://site.com/b.pdf",
-    ]
+        # Verifica que o fluxo foi interrompido
+        mock_dependencies["file_manager"].save_file.assert_not_called()
+        mock_dependencies["zip_compressor"].create_zip.assert_not_called()
+        mock_dependencies["pdf_remove"].remove_pdfs.assert_not_called()
+        mock_error.assert_called_with(
+            "Erro durante o processamento dos PDFs: Scraping failed"
+        )
 
-    # Simula erro no primeiro download
-    file_manager.save_file.side_effect = [Exception("Falha no download"), None]
+    @patch.object(logger, "error")
+    def test_process_zip_error(self, mock_error, processing_service, mock_dependencies):
+        """Testa quando ocorre erro na compactação"""
+        pdf_links = ["http://example.com/1.pdf"]
+        mock_dependencies["scraper"].get_pdf_links.return_value = pdf_links
+        mock_dependencies["zip_compressor"].create_zip.side_effect = Exception(
+            "Zip failed"
+        )
 
-    service.process("http://site.com")
+        processing_service.process("http://example.com")
 
-    assert file_manager.save_file.call_count == 2
-    assert compressor.create_zip.called
-    assert remove.remove_pdfs.called
-
-
-def test_process_logs_error_if_zip_creation_fails(setup_service):
-    """
-    Verifica se a exceção durante a compactação é capturada e logada.
-    """
-    service, scraper, _, compressor, _ = setup_service
-    scraper.get_pdf_links.return_value = ["http://site.com/a.pdf"]
-    compressor.create_zip.side_effect = Exception("Erro de zip")
-
-    with patch("dataweaver.scraper.modules.pdf_processor.logger.error") as mock_log:
-        service.process("http://site.com")
-        assert mock_log.called
-        assert "Erro durante o processamento" in mock_log.call_args[0][0]
-
-
-def test_process_logs_error_if_pdf_removal_fails(setup_service):
-    """
-    Verifica se a exceção ao excluir PDFs é capturada e logada.
-    """
-    service, scraper, _, _, remove = setup_service
-    scraper.get_pdf_links.return_value = ["http://site.com/a.pdf"]
-    remove.remove_pdfs.side_effect = Exception("Erro ao remover")
-
-    with patch("dataweaver.scraper.modules.pdf_processor.logger.error") as mock_log:
-        service.process("http://site.com")
-        assert mock_log.called
-        assert "Erro durante o processamento" in mock_log.call_args[0][0]
-
-
-def test_process_logs_error_if_scraper_fails(setup_service):
-    """
-    Verifica se erro no scraper é capturado e logado.
-    """
-    service, scraper, _, _, _ = setup_service
-    scraper.get_pdf_links.side_effect = Exception("Falha no scraping")
-
-    with patch("dataweaver.scraper.modules.pdf_processor.logger.error") as mock_log:
-        service.process("http://site.com")
-        assert mock_log.called
-        assert "Erro durante o processamento" in mock_log.call_args[0][0]
+        # Verifica que remove_pdfs não foi chamado
+        mock_dependencies["pdf_remove"].remove_pdfs.assert_not_called()
+        mock_error.assert_called_with(
+            "Erro durante o processamento dos PDFs: Zip failed"
+        )

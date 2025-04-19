@@ -35,6 +35,7 @@ class ZipCompressor(ZipCompressorInterface):
             logger.info(f"Compactado: {zip_name}")
         except Exception as e:
             logger.error(f"Erro ao criar o ZIP {zip_name}: {e}")
+            raise
 
     def _get_zip_path(self, zip_name: str) -> "Path":
         """
@@ -80,7 +81,7 @@ class ZipCompressor(ZipCompressorInterface):
             return [file for file in self.folder.rglob("*.pdf") if file.is_file()]
         except Exception as e:
             logger.error(f"Erro ao buscar arquivos PDF: {e}")
-            return []
+            raise
 
 
 class ZipCompressorDecorator(ZipCompressorInterface):
@@ -136,3 +137,4 @@ class PDFRemove(PDFRemoveInterface):
                     logger.warning(f"Erro ao excluir {pdf_file.name}: {e}")
         except Exception as e:
             logger.error(f"Erro ao buscar arquivos PDF para exclusão: {e}")
+            raise

@@ -15,7 +15,7 @@ class DefaultPDFServiceFactory(PDFServiceAbstractFactory):
     def create_http_client(self) -> HttpClientInterface:
         return RequestsHttpClient()
 
-    def create_link_extractor(self) -> PDFExtractionStrategy:
+    def create_link_extractor(self) -> PDFLinkExtractor:
         return PDFLinkExtractor(
             [
                 AnchorPDFExtractionStrategy(self.key_filter),
