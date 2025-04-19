@@ -1,7 +1,7 @@
 from .interfaces import (
     PDFScraperInterface,
     HttpClientInterface,
-    PDFExtractorStrategyInterface,
+    PDFExtractionStrategy,
 )
 from dataweaver.settings import logger
 
@@ -17,7 +17,7 @@ class RequestsPDFScraper(PDFScraperInterface):
     """
 
     def __init__(
-        self, http_client: HttpClientInterface, extractor: PDFExtractorStrategyInterface
+        self, http_client: HttpClientInterface, extractor: PDFExtractionStrategy
     ) -> None:
         """
         Inicializa o scraper com um cliente HTTP e uma estratégia de extração.
@@ -48,82 +48,42 @@ class RequestsPDFScraper(PDFScraperInterface):
             return []
 
 
-class PDFLinkExtractor(PDFExtractorStrategyInterface):
-    """
-    Estratégia para extrair links de arquivos PDF com base em uma palavra-chave.
-    """
-
+class AnchorPDFExtractionStrategy(PDFExtractionStrategy):
     def __init__(self, keyword: str):
-        """
-        Inicializa o extrator com a palavra-chave que será usada como filtro.
-
-        Parâmetros:
-            keyword (str): Palavra-chave que deve estar presente no nome do arquivo.
-        """
         self.keyword = keyword.lower()
 
+    def extract(self, soup: BeautifulSoup, base_url: str) -> set[str]:
+        links = set()
+        for link in soup.find_all("a", href=True):
+            href = link["href"]
+            if ".pdf" in href.lower() and self.keyword in href.lower():
+                links.add(urljoin(base_url, href))
+        return links
+
+
+class ParagraphPDFExtractionStrategy(PDFExtractionStrategy):
+    def __init__(self, keyword: str):
+        self.keyword = keyword.lower()
+
+    def extract(self, soup: BeautifulSoup, base_url: str) -> set[str]:
+        links = set()
+        for paragraph in soup.find_all("p"):
+            matches = re.findall(r'href=[\'"]?([^\'" >]+\.pdf)', str(paragraph))
+            for match in matches:
+                if self.keyword in match.lower():
+                    links.add(urljoin(base_url, match))
+        return links
+
+
+class PDFLinkExtractor:
+    def __init__(self, strategies: list[PDFExtractionStrategy]):
+        self.strategies = strategies
+
     def extract(self, soup: BeautifulSoup, base_url: str) -> list[str]:
-        """
-        Extrai todos os links de PDF de uma estrutura HTML.
-
-        Parâmetros:
-            soup (BeautifulSoup): Estrutura HTML da página.
-            base_url (str): URL base para composição de links relativos.
-
-        Retorno:
-            list[str]: Lista de URLs para arquivos PDF encontrados.
-        """
-        try:
-            pdf_links = set()
-            pdf_links.update(self._extract_from_anchors(soup, base_url))
-            pdf_links.update(self._extract_from_paragraphs(soup, base_url))
-            return list(pdf_links)
-        except Exception as e:
-            logger.error(f"Erro ao extrair links PDF: {e}")
-            return []
-
-    def _extract_from_anchors(self, soup: BeautifulSoup, base_url: str) -> set[str]:
-        """
-        Extrai links de arquivos PDF presentes em elementos <a>.
-
-        Parâmetros:
-            soup (BeautifulSoup): Estrutura HTML.
-            base_url (str): URL base para links relativos.
-
-        Retorno:
-            set[str]: Conjunto de links de arquivos PDF.
-        """
-        links = set()
-        try:
-            for link in soup.find_all("a", href=True):
-                href = link["href"]
-                if ".pdf" in href.lower() and self.keyword in href.lower():
-                    links.add(urljoin(base_url, href))
-        except Exception as e:
-            logger.warning(f"Erro ao extrair de <a>: {e}")
-        return links
-
-    def _extract_from_paragraphs(self, soup: BeautifulSoup, base_url: str) -> set[str]:
-        """
-        Extrai links de arquivos PDF mencionados em parágrafos usando regex.
-
-        Parâmetros:
-            soup (BeautifulSoup): Estrutura HTML.
-            base_url (str): URL base para links relativos.
-
-        Retorno:
-            set[str]: Conjunto de links de arquivos PDF encontrados em <p>.
-        """
-        links = set()
-        try:
-            for paragraph in soup.find_all("p"):
-                matches = re.findall(r'href=[\'"]?([^\'" >]+\.pdf)', str(paragraph))
-                for match in matches:
-                    if self.keyword in match.lower():
-                        links.add(urljoin(base_url, match))
-        except Exception as e:
-            logger.warning(f"Erro ao extrair de <p>: {e}")
-        return links
+        pdf_links = set()
+        for strategy in self.strategies:
+            pdf_links.update(strategy.extract(soup, base_url))
+        return list(pdf_links)
 
 
 class RequestsHttpClient(HttpClientInterface):

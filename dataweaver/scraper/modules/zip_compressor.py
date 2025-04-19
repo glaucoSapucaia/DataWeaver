@@ -83,6 +83,32 @@ class ZipCompressor(ZipCompressorInterface):
             return []
 
 
+class ZipCompressorDecorator(ZipCompressorInterface):
+    def __init__(self, compressor: ZipCompressorInterface):
+        self._compressor = compressor
+
+    def create_zip(self, zip_name: str) -> None:
+        try:
+            self._compressor.create_zip(zip_name)
+        except Exception as e:
+            logger.error(f"Erro na compressão: {e}")
+            raise
+
+
+class LoggingZipCompressor(ZipCompressorDecorator):
+    def create_zip(self, zip_name: str) -> None:
+        logger.info(f"Iniciando compressão: {zip_name}")
+        super().create_zip(zip_name)
+        logger.info(f"Compressão concluída: {zip_name}")
+
+
+class ValidationZipCompressor(ZipCompressorDecorator):
+    def create_zip(self, zip_name: str) -> None:
+        if not zip_name.endswith(".zip"):
+            raise ValueError("Nome do arquivo ZIP inválido")
+        super().create_zip(zip_name)
+
+
 class PDFRemove(PDFRemoveInterface):
     """
     Classe responsável por remover arquivos PDF de um diretório após o processamento.

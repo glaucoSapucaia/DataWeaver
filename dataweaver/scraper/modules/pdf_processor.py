@@ -1,11 +1,15 @@
-from .interfaces import (
-    FileManagerInterface,
-    PDFProcessingServiceInterface,
-    PDFScraperInterface,
-    ZipCompressorInterface,
-    PDFRemoveInterface,
-)
+from .interfaces import PDFProcessingServiceInterface
 from dataweaver.settings import logger
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .interfaces import (
+        PDFScraperInterface,
+        FileManagerInterface,
+        ZipCompressorInterface,
+        PDFRemoveInterface,
+    )
 
 
 class PDFProcessingService(PDFProcessingServiceInterface):
@@ -22,10 +26,10 @@ class PDFProcessingService(PDFProcessingServiceInterface):
     def __init__(
         self,
         zip_name: str,
-        scraper: PDFScraperInterface,
-        file_manager: FileManagerInterface,
-        zip_compressor: ZipCompressorInterface,
-        pdf_remove: PDFRemoveInterface,
+        scraper: "PDFScraperInterface",
+        file_manager: "FileManagerInterface",
+        zip_compressor: "ZipCompressorInterface",
+        pdf_remove: "PDFRemoveInterface",
     ) -> None:
         """
         Inicializa o serviço de processamento de PDFs.

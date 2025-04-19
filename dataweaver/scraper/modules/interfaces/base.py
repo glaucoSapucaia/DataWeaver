@@ -92,11 +92,11 @@ class HttpClientInterface(ABC):
         pass
 
 
-class PDFExtractorStrategyInterface(ABC):
+class PDFExtractionStrategy(ABC):
     """Interface para estratégias de extração de links de PDFs a partir do conteúdo HTML de uma página."""
 
     @abstractmethod
-    def extract(self, soup: "BeautifulSoup", base_url: str) -> list[str]:
+    def extract(self, soup: "BeautifulSoup", base_url: str) -> set[str]:
         """
         Extrai links de arquivos PDF a partir do conteúdo HTML da página.
 
@@ -107,4 +107,30 @@ class PDFExtractorStrategyInterface(ABC):
         Retorna:
             list[str]: Lista de URLs de arquivos PDF.
         """
+        pass
+
+
+class PDFServiceAbstractFactory(ABC):
+    @abstractmethod
+    def create_http_client(self) -> HttpClientInterface:
+        pass
+
+    @abstractmethod
+    def create_link_extractor(self) -> PDFExtractionStrategy:
+        pass
+
+    @abstractmethod
+    def create_scraper(self) -> PDFScraperInterface:
+        pass
+
+    @abstractmethod
+    def create_file_manager(self) -> FileManagerInterface:
+        pass
+
+    @abstractmethod
+    def create_zip_compressor(self) -> ZipCompressorInterface:
+        pass
+
+    @abstractmethod
+    def create_pdf_remover(self) -> PDFRemoveInterface:
         pass

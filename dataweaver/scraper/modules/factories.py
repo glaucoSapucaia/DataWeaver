@@ -1,46 +1,47 @@
-from dataweaver.scraper.modules import (
-    RequestsPDFScraper,
-    FileManager,
-    PDFRemove,
-    ZipCompressor,
-    PDFProcessingService,
-    RequestsHttpClient,
-    PDFLinkExtractor,
-)
-from dataweaver.settings import *
+from dataweaver.scraper.modules.interfaces import *
+from dataweaver.scraper.modules import *
 
-pdfs_dir = config.dirs.pdfs
-zip_name = config.scraper.zip_name
-key_filter = config.scraper.filter
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
-class PDFProcessingServiceFactory:
-    """
-    Fábrica responsável por montar e retornar uma instância totalmente configurada
-    do serviço de processamento de PDFs.
-    """
+class DefaultPDFServiceFactory(PDFServiceAbstractFactory):
+    def __init__(self, pdfs_dir: "Path", key_filter: str):
+        self.pdfs_dir = pdfs_dir
+        self.key_filter = key_filter
 
-    @staticmethod
-    def create() -> PDFProcessingService:
-        """
-        Cria e configura todas as dependências necessárias para o serviço principal.
+    def create_http_client(self) -> HttpClientInterface:
+        return RequestsHttpClient()
 
-        :return: Instância do PDFProcessingService
-        :raise: Propaga qualquer exceção ocorrida durante a criação dos componentes
-        """
-        try:
-            http_client = RequestsHttpClient()
-            extractor = PDFLinkExtractor(key_filter)
-            scraper = RequestsPDFScraper(http_client, extractor)
-            file_manager = FileManager(pdfs_dir)
-            remove_pdf = PDFRemove(pdfs_dir)
-            zip_compressor = ZipCompressor(pdfs_dir)
+    def create_link_extractor(self) -> PDFExtractionStrategy:
+        return PDFLinkExtractor(
+            [
+                AnchorPDFExtractionStrategy(self.key_filter),
+                ParagraphPDFExtractionStrategy(self.key_filter),
+            ]
+        )
 
-            logger.info("Serviço de processamento de PDFs criado com sucesso.")
-            return PDFProcessingService(
-                zip_name, scraper, file_manager, zip_compressor, remove_pdf
-            )
+    def create_scraper(self) -> PDFScraperInterface:
+        return RequestsPDFScraper(
+            self.create_http_client(), self.create_link_extractor()
+        )
 
-        except Exception as e:
-            logger.error(f"Erro ao criar o serviço de processamento de PDFs: {e}")
-            raise
+    def create_file_manager(self) -> FileManagerInterface:
+        return FileManager(self.pdfs_dir)
+
+    def create_zip_compressor(self) -> ZipCompressorInterface:
+        return ZipCompressor(self.pdfs_dir)
+
+    def create_pdf_remover(self) -> PDFRemoveInterface:
+        return PDFRemove(self.pdfs_dir)
+
+    def create_service(self, zip_name: str) -> PDFProcessingService:
+        return PDFProcessingService(
+            zip_name,
+            self.create_scraper(),
+            self.create_file_manager(),
+            self.create_zip_compressor(),
+            self.create_pdf_remover(),
+        )
