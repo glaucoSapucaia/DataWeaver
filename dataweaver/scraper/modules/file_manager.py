@@ -4,12 +4,13 @@ Módulo responsável pelo gerenciamento de arquivos, incluindo download e salvam
 
 from .interfaces import FileManagerInterface
 from typing import TYPE_CHECKING
-from logger import logger
+from dataweaver.config.logger import logger
 import requests  # type: ignore
 import os
 
 if TYPE_CHECKING:
     from pathlib import Path  # pragma: no cover
+
 
 class FileManager(FileManagerInterface):
     """
@@ -21,7 +22,7 @@ class FileManager(FileManagerInterface):
     - Salvar arquivos com segurança.
     """
 
-    def __init__(self, folder: 'Path') -> None:
+    def __init__(self, folder: "Path") -> None:
         """
         Inicializa o gerenciador com a pasta onde os arquivos serão armazenados.
 
@@ -44,7 +45,7 @@ class FileManager(FileManagerInterface):
             response = requests.get(url, stream=True)
             response.raise_for_status()
 
-            with open(file_name, 'wb') as file:
+            with open(file_name, "wb") as file:
                 for chunk in response.iter_content(1024):
                     file.write(chunk)
 

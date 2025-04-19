@@ -1,19 +1,6 @@
-"""
-Módulo principal para execução do serviço de processamento de PDFs.
-
-Este script atua como ponto de entrada da aplicação. Ele utiliza uma fábrica
-para instanciar o serviço de processamento de PDFs, que realiza as seguintes etapas:
-1. Busca de links de arquivos PDF em uma URL configurada.
-2. Download dos arquivos encontrados.
-3. Compactação dos arquivos em um arquivo .zip.
-4. Remoção dos arquivos PDF originais após a compactação.
-
-Todos os eventos importantes são registrados no sistema de logging configurado.
-"""
-
-from logger import logger
+from dataweaver.config.logger import logger
 from dataweaver.scraper.modules import PDFProcessingServiceFactory
-from paths import URL
+from dataweaver.config.paths import URL
 
 if __name__ == "__main__":
     """

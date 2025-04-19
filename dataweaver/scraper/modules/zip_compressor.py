@@ -8,22 +8,23 @@ Contém as classes:
 """
 
 from .interfaces import ZipCompressorInterface, PDFRemoveInterface
-from logger import logger
+from dataweaver.config.logger import logger
 from typing import TYPE_CHECKING
 import zipfile
 
 if TYPE_CHECKING:
     from pathlib import Path  # pragma: no cover
 
+
 class ZipCompressor(ZipCompressorInterface):
     """
     Classe responsável por compactar arquivos PDF em um único arquivo ZIP.
     """
 
-    def __init__(self, folder: 'Path') -> None:
+    def __init__(self, folder: "Path") -> None:
         """
         Inicializa o compressor ZIP com o diretório onde os arquivos estão localizados.
-        
+
         Parâmetros:
             folder (Path): Caminho da pasta que contém os arquivos a serem compactados.
         """
@@ -43,7 +44,7 @@ class ZipCompressor(ZipCompressorInterface):
         except Exception as e:
             logger.error(f"Erro ao criar o ZIP {zip_name}: {e}")
 
-    def _get_zip_path(self, zip_name: str) -> 'Path':
+    def _get_zip_path(self, zip_name: str) -> "Path":
         """
         Gera o caminho completo do arquivo ZIP com base no nome fornecido.
 
@@ -55,7 +56,7 @@ class ZipCompressor(ZipCompressorInterface):
         """
         return self.folder / zip_name
 
-    def _compress_files(self, zip_path: 'Path') -> None:
+    def _compress_files(self, zip_path: "Path") -> None:
         """
         Adiciona os arquivos PDF encontrados no diretório ao arquivo ZIP.
 
@@ -63,18 +64,20 @@ class ZipCompressor(ZipCompressorInterface):
             zip_path (Path): Caminho do arquivo ZIP que será criado.
         """
         try:
-            with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
                 for file_path in self._get_pdf_files():
                     try:
                         zipf.write(file_path, file_path.relative_to(self.folder))
                         logger.info(f"Arquivo adicionado: {file_path.name[:10]}")
                     except Exception as e:
-                        logger.warning(f"Erro ao adicionar {file_path.name} ao ZIP: {e}")
+                        logger.warning(
+                            f"Erro ao adicionar {file_path.name} ao ZIP: {e}"
+                        )
         except Exception as e:
             logger.error(f"Erro ao criar o arquivo ZIP {zip_path.name}: {e}")
             raise
 
-    def _get_pdf_files(self) -> list['Path']:
+    def _get_pdf_files(self) -> list["Path"]:
         """
         Recupera todos os arquivos PDF do diretório.
 
@@ -82,17 +85,18 @@ class ZipCompressor(ZipCompressorInterface):
             list[Path]: Lista de caminhos de arquivos PDF encontrados.
         """
         try:
-            return [file for file in self.folder.rglob('*.pdf') if file.is_file()]
+            return [file for file in self.folder.rglob("*.pdf") if file.is_file()]
         except Exception as e:
             logger.error(f"Erro ao buscar arquivos PDF: {e}")
             return []
+
 
 class PDFRemove(PDFRemoveInterface):
     """
     Classe responsável por remover arquivos PDF de um diretório após o processamento.
     """
 
-    def __init__(self, folder: 'Path') -> None:
+    def __init__(self, folder: "Path") -> None:
         """
         Inicializa o removedor de PDFs com o diretório onde os arquivos estão localizados.
 

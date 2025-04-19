@@ -7,19 +7,26 @@ Contém as classes:
 - RequestsHttpClient: implementação do cliente HTTP usando a biblioteca `requests`.
 """
 
-from .interfaces import PDFScraperInterface, HttpClientInterface, PDFExtractorStrategyInterface
+from .interfaces import (
+    PDFScraperInterface,
+    HttpClientInterface,
+    PDFExtractorStrategyInterface,
+)
 from urllib.parse import urljoin
-from logger import logger
+from dataweaver.config.logger import logger
 from bs4 import BeautifulSoup  # type: ignore
-import requests                # type: ignore
+import requests  # type: ignore
 import re
+
 
 class RequestsPDFScraper(PDFScraperInterface):
     """
     Implementação do PDFScraper que utiliza um cliente HTTP e uma estratégia de extração.
     """
 
-    def __init__(self, http_client: HttpClientInterface, extractor: PDFExtractorStrategyInterface) -> None:
+    def __init__(
+        self, http_client: HttpClientInterface, extractor: PDFExtractorStrategyInterface
+    ) -> None:
         """
         Inicializa o scraper com um cliente HTTP e uma estratégia de extração.
 
@@ -42,11 +49,12 @@ class RequestsPDFScraper(PDFScraperInterface):
         """
         try:
             html = self.http_client.fetch_html(url)
-            soup = BeautifulSoup(html, 'html.parser')
+            soup = BeautifulSoup(html, "html.parser")
             return self.extractor.extract(soup, url)
         except Exception as e:
             logger.error(f"Erro ao obter links PDF de '{url}': {e}")
             return []
+
 
 class PDFLinkExtractor(PDFExtractorStrategyInterface):
     """
@@ -95,8 +103,8 @@ class PDFLinkExtractor(PDFExtractorStrategyInterface):
         """
         links = set()
         try:
-            for link in soup.find_all('a', href=True):
-                href = link['href']
+            for link in soup.find_all("a", href=True):
+                href = link["href"]
                 if ".pdf" in href.lower() and self.keyword in href.lower():
                     links.add(urljoin(base_url, href))
         except Exception as e:
@@ -116,7 +124,7 @@ class PDFLinkExtractor(PDFExtractorStrategyInterface):
         """
         links = set()
         try:
-            for paragraph in soup.find_all('p'):
+            for paragraph in soup.find_all("p"):
                 matches = re.findall(r'href=[\'"]?([^\'" >]+\.pdf)', str(paragraph))
                 for match in matches:
                     if self.keyword in match.lower():
@@ -124,6 +132,7 @@ class PDFLinkExtractor(PDFExtractorStrategyInterface):
         except Exception as e:
             logger.warning(f"Erro ao extrair de <p>: {e}")
         return links
+
 
 class RequestsHttpClient(HttpClientInterface):
     """

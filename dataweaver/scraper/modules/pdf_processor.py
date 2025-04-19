@@ -10,12 +10,13 @@ from .interfaces import (
     ZipCompressorInterface,
     PDFRemoveInterface,
 )
-from logger import logger
+from dataweaver.config.logger import logger
+
 
 class PDFProcessingService(PDFProcessingServiceInterface):
     """
     Serviço principal que gerencia todo o fluxo de processamento de PDFs.
-    
+
     Responsável por:
     - Obter os links dos PDFs por meio do scraper.
     - Baixar os arquivos com o gerenciador de arquivos.
@@ -23,12 +24,14 @@ class PDFProcessingService(PDFProcessingServiceInterface):
     - Remover os arquivos PDF após a compactação.
     """
 
-    def __init__(self,
-                 zip_name: str,
-                 scraper: PDFScraperInterface,
-                 file_manager: FileManagerInterface,
-                 zip_compressor: ZipCompressorInterface,
-                 pdf_remove: PDFRemoveInterface) -> None:
+    def __init__(
+        self,
+        zip_name: str,
+        scraper: PDFScraperInterface,
+        file_manager: FileManagerInterface,
+        zip_compressor: ZipCompressorInterface,
+        pdf_remove: PDFRemoveInterface,
+    ) -> None:
         """
         Inicializa o serviço de processamento de PDFs.
 
