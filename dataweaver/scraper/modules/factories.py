@@ -7,18 +7,24 @@ compressor ZIP e removedor de PDFs, promovendo injeção de dependência e facil
 """
 
 from dataweaver.scraper.modules import (
-    RequestsPDFScraper, FileManager, PDFRemove, ZipCompressor,
-    PDFProcessingService, RequestsHttpClient, PDFLinkExtractor
+    RequestsPDFScraper,
+    FileManager,
+    PDFRemove,
+    ZipCompressor,
+    PDFProcessingService,
+    RequestsHttpClient,
+    PDFLinkExtractor,
 )
-from paths import PDFS_DIR, ZIP_NAME, FILTER
-from logger import logger
+from dataweaver.config.paths import PDFS_DIR, ZIP_NAME, FILTER
+from dataweaver.config.logger import logger
+
 
 class PDFProcessingServiceFactory:
     """
-    Fábrica responsável por montar e retornar uma instância totalmente configurada 
+    Fábrica responsável por montar e retornar uma instância totalmente configurada
     do serviço de processamento de PDFs.
     """
-    
+
     @staticmethod
     def create() -> PDFProcessingService:
         """
@@ -37,11 +43,7 @@ class PDFProcessingServiceFactory:
 
             logger.info("Serviço de processamento de PDFs criado com sucesso.")
             return PDFProcessingService(
-                ZIP_NAME,
-                scraper,
-                file_manager,
-                zip_compressor,
-                remove_pdf
+                ZIP_NAME, scraper, file_manager, zip_compressor, remove_pdf
             )
 
         except Exception as e:

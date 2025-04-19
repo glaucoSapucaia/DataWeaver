@@ -18,12 +18,13 @@ de log recebam apenas mensagens de um nível exato.
 """
 
 import logging
-from paths import LOG_FILE, ERROR_LOG_FILE, WARNING_LOG_FILE, LOG_DIR
+from .paths import LOG_FILE, ERROR_LOG_FILE, WARNING_LOG_FILE, LOG_DIR
 
 if not LOG_DIR.exists() and not LOG_DIR.is_dir():
     raise RuntimeError(f"Erro ao criar diretório {LOG_DIR}")
 
 # ==================== FILTRO DE NÍVEL EXATO ====================
+
 
 class ExactLevelFilter(logging.Filter):
     def __init__(self, level):
@@ -32,6 +33,7 @@ class ExactLevelFilter(logging.Filter):
 
     def filter(self, record):
         return record.levelno == self.level
+
 
 # ==================== CONFIGURAÇÃO DO LOGGER ====================
 
