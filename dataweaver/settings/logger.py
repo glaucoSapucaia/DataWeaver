@@ -1,6 +1,6 @@
 import logging
 from dataweaver.utils import ensure_directory_exists
-from .paths import config
+from .config import config
 
 log_dir = config.logging.log_dir
 log_file = config.logging.app_log

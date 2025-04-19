@@ -75,14 +75,14 @@ class AppConfig:
 
     _instance = None  # Variável de classe para o padrão Singleton
 
-    def __new__(cls):
+    def __new__(cls) -> "AppConfig":
         """Implementação do padrão Singleton"""
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance._initialize()
         return cls._instance
 
-    def _initialize(self):
+    def _initialize(self) -> None:
         """Inicializa todas as configurações da aplicação"""
         self.dirs = DirectoryConfig.create()  # Configuração de diretórios
         ensure_directory_exists(self.dirs.pdfs)  # Cria diretórios necessários

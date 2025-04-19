@@ -9,132 +9,165 @@ if TYPE_CHECKING:
 
 
 class ZipCompressor(ZipCompressorInterface):
-    """
-    Classe responsável por compactar arquivos PDF em um único arquivo ZIP.
+    """Responsável por compactar arquivos PDF em um arquivo ZIP.
+
+    SOLID:
+        Single Responsibility Principle - foca apenas na compressão
     """
 
     def __init__(self, folder: "Path") -> None:
-        """
-        Inicializa o compressor ZIP com o diretório onde os arquivos estão localizados.
-
-        Parâmetros:
-            folder (Path): Caminho da pasta que contém os arquivos a serem compactados.
-        """
         self.folder = folder
 
     def create_zip(self, zip_name: str) -> None:
-        """
-        Compacta todos os arquivos PDF do diretório em um arquivo ZIP.
+        """Cria arquivo ZIP contendo todos os PDFs do diretório.
 
-        Parâmetros:
-            zip_name (str): Nome do arquivo ZIP de destino.
+        Args:
+            zip_name: Nome do arquivo ZIP
+
+        Raises:
+            Exception: Se ocorrer erro durante a compressão
+            Logs dos detalhes do processo
         """
         try:
             zip_path = self._get_zip_path(zip_name)
             self._compress_files(zip_path)
-            logger.info(f"Compactado: {zip_name}")
+            logger.info(f"Arquivo {zip_name} criado com sucesso")
         except Exception as e:
-            logger.error(f"Erro ao criar o ZIP {zip_name}: {e}")
+            logger.error(f"Falha ao criar {zip_name}: {e}")
             raise
 
     def _get_zip_path(self, zip_name: str) -> "Path":
-        """
-        Gera o caminho completo do arquivo ZIP com base no nome fornecido.
+        """Gera o Path completo para o arquivo ZIP.
 
-        Parâmetros:
-            zip_name (str): Nome do arquivo ZIP.
+        Args:
+            zip_name: Nome base do arquivo
 
-        Retorno:
-            Path: Caminho completo do arquivo ZIP.
+        Returns:
+            Path completo
         """
-        return self.folder / zip_name
+        return self.folder / f"{zip_name}"
 
     def _compress_files(self, zip_path: "Path") -> None:
-        """
-        Adiciona os arquivos PDF encontrados no diretório ao arquivo ZIP.
+        """Adiciona PDFs ao arquivo ZIP.
 
-        Parâmetros:
-            zip_path (Path): Caminho do arquivo ZIP que será criado.
+        Args:
+            zip_path: Localização do arquivo ZIP a ser criado
+
+        Note:
+            Ignora arquivos problemáticos individualmente
         """
-        try:
-            with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-                for file_path in self._get_pdf_files():
-                    try:
-                        zipf.write(file_path, file_path.relative_to(self.folder))
-                        logger.info(f"Arquivo adicionado: {file_path.name[:30]}")
-                    except Exception as e:
-                        logger.warning(
-                            f"Erro ao adicionar {file_path.name} ao ZIP: {e}"
-                        )
-        except Exception as e:
-            logger.error(f"Erro ao criar o arquivo ZIP {zip_path.name}: {e}")
-            raise
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for file_path in self._get_pdf_files():
+                try:
+                    arcname = file_path.relative_to(self.folder)
+                    zipf.write(file_path, arcname)
+                    logger.debug(f"Adicionado: {arcname}")
+                except Exception as e:
+                    logger.warning(f"Pulando {file_path.name}: {e}")
 
     def _get_pdf_files(self) -> list["Path"]:
-        """
-        Recupera todos os arquivos PDF do diretório.
+        """Lista todos os PDFs no diretório.
 
-        Retorno:
-            list[Path]: Lista de caminhos de arquivos PDF encontrados.
+        Returns:
+            Lista de Paths para arquivos .pdf
+
+        Raises:
+            Exception: Se não conseguir ler o diretório
         """
         try:
-            return [file for file in self.folder.rglob("*.pdf") if file.is_file()]
+            return [f for f in self.folder.glob("*.pdf") if f.is_file()]
         except Exception as e:
-            logger.error(f"Erro ao buscar arquivos PDF: {e}")
+            logger.error(f"Falha ao listar PDFs: {e}")
             raise
 
 
 class ZipCompressorDecorator(ZipCompressorInterface):
-    def __init__(self, compressor: ZipCompressorInterface):
+    """Classe base para decoradores de compressão.
+
+    Padrão de Projeto:
+        Decorator - permite adicionar comportamentos dinamicamente
+    """
+
+    def __init__(self, compressor: ZipCompressorInterface) -> None:
+        """Inicializa com o compressor a ser decorado.
+
+        Args:
+            compressor: Instância de ZipCompressorInterface
+        """
         self._compressor = compressor
 
     def create_zip(self, zip_name: str) -> None:
-        try:
-            self._compressor.create_zip(zip_name)
-        except Exception as e:
-            logger.error(f"Erro na compressão: {e}")
-            raise
+        """Delega a operação para o compressor interno.
+
+        Args:
+            zip_name: Nome do arquivo ZIP
+        """
+        self._compressor.create_zip(zip_name)
 
 
 class LoggingZipCompressor(ZipCompressorDecorator):
+    """Decorador que adiciona logs detalhados ao processo.
+
+    Padrão de Projeto:
+        Decorator - estende funcionalidade sem modificar a classe original
+    """
+
     def create_zip(self, zip_name: str) -> None:
-        logger.info(f"Iniciando compressão: {zip_name}")
+        """Adiciona logs antes e após a compressão.
+
+        Args:
+            zip_name: Nome do arquivo ZIP
+        """
+        logger.info(f"[DECORATOR] Iniciando compressão: {zip_name}")
         super().create_zip(zip_name)
-        logger.info(f"Compressão concluída: {zip_name}")
+        logger.info(f"[DECORATOR] Compressão finalizada: {zip_name}")
 
 
 class ValidationZipCompressor(ZipCompressorDecorator):
+    """Decorador que valida o nome do arquivo ZIP.
+
+    Padrão de Projeto:
+        Decorator - adiciona validação prévia
+    """
+
     def create_zip(self, zip_name: str) -> None:
+        """Valida se o nome termina com .zip antes de comprimir.
+
+        Args:
+            zip_name: Nome do arquivo ZIP
+
+        Raises:
+            ValueError: Se o nome for inválido
+        """
         if not zip_name.endswith(".zip"):
-            raise ValueError("Nome do arquivo ZIP inválido")
+            raise ValueError("O nome do arquivo deve terminar com .zip")
         super().create_zip(zip_name)
 
 
 class PDFRemove(PDFRemoveInterface):
-    """
-    Classe responsável por remover arquivos PDF de um diretório após o processamento.
+    """Responsável por limpar arquivos PDF após processamento.
+
+    SOLID:
+        Single Responsibility Principle - foca apenas na remoção
     """
 
     def __init__(self, folder: "Path") -> None:
-        """
-        Inicializa o removedor de PDFs com o diretório onde os arquivos estão localizados.
-
-        Parâmetros:
-            folder (Path): Caminho da pasta que contém os arquivos PDF.
-        """
         self.folder = folder
 
     def remove_pdfs(self) -> None:
-        """
-        Remove todos os arquivos PDF encontrados no diretório.
+        """Remove todos os arquivos PDF do diretório.
+
+        Note:
+            Continua processo mesmo se alguns arquivos falharem
+            Logs para cada operação individual
         """
         try:
-            for pdf_file in self.folder.rglob("*.pdf"):
+            for pdf_file in self.folder.glob("*.pdf"):
                 try:
                     pdf_file.unlink()
-                    logger.info(f"Arquivo excluído: {pdf_file.name[:30]}")
+                    logger.info(f"Removido: {pdf_file.name}")
                 except Exception as e:
-                    logger.warning(f"Erro ao excluir {pdf_file.name}: {e}")
+                    logger.warning(f"Falha ao remover {pdf_file.name}: {e}")
         except Exception as e:
-            logger.error(f"Erro ao buscar arquivos PDF para exclusão: {e}")
+            logger.error(f"Erro geral ao limpar PDFs: {e}")
             raise
