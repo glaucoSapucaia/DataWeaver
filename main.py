@@ -4,9 +4,10 @@ from dataweaver.scraper.modules import DefaultPDFServiceFactory
 # Configurações do usuário
 
 url = config.scraper.url
-pdfs_dir = config.dirs.pdfs
 zip_name = config.scraper.zip_name
 key_filter = config.scraper.filter
+
+pdfs_dir = config.dirs.pdfs
 
 
 if __name__ == "__main__":
