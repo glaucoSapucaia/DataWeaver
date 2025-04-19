@@ -1,254 +1,300 @@
-"""
-Testes para os componentes `ZipCompressor` e `PDFRemove` do módulo `zip_compressor`.
+from dataweaver.settings import logger
+from dataweaver.scraper.modules import (
+    ZipCompressor,
+    PDFRemove,
+    ZipCompressorDecorator,
+    LoggingZipCompressor,
+    ValidationZipCompressor,
+)
 
-Este módulo testa a compressão de arquivos PDF em um diretório em um arquivo `.zip`
-e a remoção de arquivos PDF de um diretório. Inclui testes de funcionalidade e testes
-para tratamento de exceções e registro de logs.
-
-Dependências:
-- pytest
-- unittest.mock
-- modules.zip_compressor
-"""
-
+import pytest
+from unittest.mock import MagicMock, patch
 from pathlib import Path
-from unittest.mock import patch
-import pytest  # type: ignore
 import zipfile
-from dataweaver.scraper.modules.zip_compressor import ZipCompressor, PDFRemove
+import tempfile
 
-# === FIXTURES ===
 
 @pytest.fixture
-def pdf_files(tmp_path):
-    """
-    Cria e retorna um diretório temporário com três arquivos PDF de teste.
-    """
-    pdf1 = tmp_path / "file1.pdf"
-    pdf2 = tmp_path / "file2.pdf"
-    pdf3 = tmp_path / "subdir" / "file3.pdf"
-    pdf3.parent.mkdir(exist_ok=True)
+def tmp_folder(tmp_path):
+    """Fixture que cria uma estrutura de arquivos temporária para testes.
 
-    for pdf in [pdf1, pdf2, pdf3]:
-        pdf.write_text("Conteúdo PDF de teste")
-        
+    Cria:
+    - file1.pdf
+    - file2.pdf
+    - subfolder/file3.pdf
+    - not_a_pdf.txt
+    """
+    (tmp_path / "file1.pdf").touch()
+    (tmp_path / "file2.pdf").touch()
+    (tmp_path / "subfolder").mkdir()
+    (tmp_path / "subfolder" / "file3.pdf").touch()
+    (tmp_path / "not_a_pdf.txt").touch()
     return tmp_path
 
 
-# === TESTES FUNCIONAIS ===
-
-def test_zip_compressor_create_zip(pdf_files):
-    """
-    Verifica se o ZipCompressor cria corretamente um arquivo ZIP com todos os PDFs.
-    """
-    zip_name = "test.zip"
-    zip_path = pdf_files / zip_name
-    compressor = ZipCompressor(folder=pdf_files)
-
-    compressor.create_zip(zip_name)
-    assert zip_path.exists()
-
-    with zipfile.ZipFile(zip_path, 'r') as zipf:
-        zip_contents = zipf.namelist()
-        expected_files = ['file1.pdf', 'file2.pdf', 'subdir/file3.pdf']
-        for file in expected_files:
-            assert file in zip_contents
+@pytest.fixture
+def empty_folder(tmp_path):
+    """Fixture que retorna um diretório vazio."""
+    return tmp_path
 
 
-def test_zip_compressor_empty_folder(tmp_path):
-    """
-    Testa criação de um ZIP a partir de uma pasta vazia.
-    """
-    zip_name = "empty.zip"
-    zip_path = tmp_path / zip_name
-    compressor = ZipCompressor(folder=tmp_path)
-
-    compressor.create_zip(zip_name)
-    assert zip_path.exists()
-
-    with zipfile.ZipFile(zip_path, 'r') as zipf:
-        assert zipf.namelist() == []
+@pytest.fixture
+def invalid_folder():
+    """Fixture que retorna um caminho inválido."""
+    return Path("/invalid/path")
 
 
-def test_pdf_remove(pdf_files):
-    """
-    Verifica se todos os arquivos PDF são removidos corretamente.
-    """
-    remover = PDFRemove(folder=pdf_files)
-    remover.remove_pdfs()
-    pdf_list = list(pdf_files.rglob("*.pdf"))
-    assert len(pdf_list) == 0
+class TestZipCompressor:
+    """Testes para a classe ZipCompressor."""
 
+    def test_initialization(self, tmp_folder):
+        """Testa a inicialização correta do compressor.
 
-def test_pdf_remove_with_no_pdfs(tmp_path):
-    """
-    Verifica se PDFRemove não falha ao tentar remover PDFs quando não existem.
-    """
-    remover = PDFRemove(folder=tmp_path)
-    remover.remove_pdfs()
-    assert list(tmp_path.rglob("*.pdf")) == []
+        Verifica:
+            - O diretório é armazenado corretamente
+        """
+        compressor = ZipCompressor(tmp_folder)
+        assert compressor.folder == tmp_folder
 
+    @patch.object(logger, "info")
+    @patch.object(logger, "error")
+    def test_create_zip_success(self, mock_error, mock_info, tmp_folder):
+        """Testa a criação bem-sucedida de um arquivo ZIP.
 
-# === TESTES DE EXCEÇÕES (ZipCompressor) ===
+        Verifica:
+            - O arquivo ZIP é criado
+            - Todos os PDFs são incluídos
+            - Logs apropriados são gerados
+            - Subpastas são mantidas
+        """
+        compressor = ZipCompressor(tmp_folder)
+        zip_name = "test.zip"
 
-def test_create_zip_logs_error(tmp_path):
-    """
-    Testa se erro durante a obtenção do caminho do ZIP é capturado e logado.
-    """
-    compressor = ZipCompressor(folder=tmp_path)
+        compressor.create_zip(zip_name)
 
-    with patch.object(compressor, '_get_zip_path', side_effect=Exception("Falha")):
-        compressor.create_zip("erro.zip")  # Não deve lançar exceção
+        zip_path = tmp_folder / zip_name
+        assert zip_path.exists()
 
+        with zipfile.ZipFile(zip_path, "r") as zipf:
+            assert "file1.pdf" in zipf.namelist()
+            assert "subfolder/file3.pdf" in zipf.namelist()
+            assert "not_a_pdf.txt" not in zipf.namelist()
 
-def test_compress_files_outer_exception(tmp_path):
-    """
-    Verifica se exceção externa em ZipFile é propagada corretamente.
-    """
-    compressor = ZipCompressor(folder=tmp_path)
-    zip_path = tmp_path / "fail.zip"
+        mock_info.assert_any_call(f"Compactado: {zip_name}")
+        mock_error.assert_not_called()
 
-    with patch("zipfile.ZipFile", side_effect=Exception("Erro externo")):
+    @patch.object(logger, "error")
+    def test_create_zip_invalid_folder(self, mock_error, invalid_folder):
+        """Testa comportamento com diretório inválido.
+
+        Verifica:
+            - Exceção é levantada
+            - Erro é logado
+        """
+        compressor = ZipCompressor(invalid_folder)
+
         with pytest.raises(Exception):
-            compressor._compress_files(zip_path)
+            compressor.create_zip("test.zip")
+
+        mock_error.assert_called()
+
+    @patch.object(logger, "warning")
+    def test_create_zip_with_partial_errors(
+        self, mock_warning, tmp_folder, monkeypatch
+    ):
+        """Testa criação de ZIP com erros parciais.
+
+        Verifica:
+            - Continua apesar de erros individuais
+            - Loga warnings para arquivos problemáticos
+            - Cria o ZIP mesmo com falhas parciais
+        """
+
+        def mock_write(self, file_path, arcname):
+            if "file2.pdf" in str(file_path):
+                raise Exception("Mocked error")
+            return MagicMock()
+
+        monkeypatch.setattr(zipfile.ZipFile, "write", mock_write)
+
+        compressor = ZipCompressor(tmp_folder)
+        compressor.create_zip("partial.zip")
+
+        mock_warning.assert_called()
+        assert (tmp_folder / "partial.zip").exists()
+
+    def test_get_pdf_files(self, tmp_folder):
+        """Testa listagem de arquivos PDF.
+
+        Verifica:
+            - Encontra todos os PDFs
+            - Mantém estrutura de subpastas
+            - Ignora arquivos não-PDF
+        """
+        compressor = ZipCompressor(tmp_folder)
+        pdf_files = compressor._get_pdf_files()
+
+        pdf_paths = [
+            str(p.relative_to(tmp_folder)).replace("\\", "/") for p in pdf_files
+        ]
+
+        assert len(pdf_files) == 3
+        assert "file1.pdf" in pdf_paths
+        assert "file2.pdf" in pdf_paths
+        assert "subfolder/file3.pdf" in pdf_paths
+
+    def test_get_pdf_files_empty(self, empty_folder):
+        """Testa listagem em diretório vazio.
+
+        Verifica:
+            - Retorna lista vazia
+        """
+        compressor = ZipCompressor(empty_folder)
+        assert len(compressor._get_pdf_files()) == 0
+
+    def test_get_pdf_files_error(self, invalid_folder):
+        """Testa listagem em diretório inválido.
+
+        Verifica:
+            - Retorna lista vazia
+        """
+        compressor = ZipCompressor(invalid_folder)
+        assert len(compressor._get_pdf_files()) == 0
 
 
-def test_compress_files_inner_exception(tmp_path):
-    """
-    Verifica se erro interno durante `relative_to` é capturado.
-    """
-    compressor = ZipCompressor(folder=tmp_path)
-    pdf = tmp_path / "file.pdf"
-    pdf.write_text("conteúdo")
-    zip_path = tmp_path / "test.zip"
+class TestPDFRemove:
+    """Testes para a classe PDFRemove."""
 
-    with patch.object(Path, "relative_to", side_effect=Exception("Erro relativo")):
-        compressor._compress_files(zip_path)
+    @patch.object(logger, "info")
+    @patch.object(logger, "error")
+    def test_remove_pdfs_success(self, mock_error, mock_info, tmp_folder):
+        """Testa remoção bem-sucedida de PDFs.
 
+        Verifica:
+            - Remove apenas arquivos PDF
+            - Mantém arquivos não-PDF
+            - Loga operações
+        """
+        remover = PDFRemove(tmp_folder)
 
-def test_get_pdf_files_exception_logs(tmp_path):
-    """
-    Testa se erro durante busca de PDFs com `rglob` é capturado e retorna lista vazia.
-    """
-    compressor = ZipCompressor(folder=tmp_path)
+        assert (tmp_folder / "file1.pdf").exists()
 
-    with patch("pathlib.Path.rglob", side_effect=Exception("Erro em rglob")):
-        result = compressor._get_pdf_files()
-        assert result == []
-
-
-# === TESTES DE EXCEÇÕES (PDFRemove) ===
-
-def test_pdf_remove_rglob_error(tmp_path):
-    """
-    Verifica se erro ao buscar arquivos com `rglob` é tratado sem falhar.
-    """
-    remover = PDFRemove(folder=tmp_path)
-
-    with patch("pathlib.Path.rglob", side_effect=Exception("Falha ao listar")):
         remover.remove_pdfs()
 
+        assert not (tmp_folder / "file1.pdf").exists()
+        assert not (tmp_folder / "subfolder" / "file3.pdf").exists()
+        assert (tmp_folder / "not_a_pdf.txt").exists()
 
-def test_pdf_remove_unlink_error(tmp_path):
-    """
-    Verifica se erro ao deletar arquivo é tratado sem falhar.
-    """
-    pdf = tmp_path / "file.pdf"
-    pdf.write_text("teste")
-    remover = PDFRemove(folder=tmp_path)
+        mock_info.assert_any_call("Arquivo excluído: file1.pdf")
+        mock_error.assert_not_called()
 
-    with patch.object(Path, "unlink", side_effect=Exception("Falha ao excluir")):
+    @patch.object(logger, "warning")
+    def test_remove_pdfs_partial_failure(self, mock_warning, tmp_folder, monkeypatch):
+        """Testa remoção com erros parciais.
+
+        Verifica:
+            - Continua após erros individuais
+            - Loga warnings
+            - Remove arquivos válidos
+        """
+        file1 = tmp_folder / "file1.pdf"
+        file2 = tmp_folder / "file2.pdf"
+        file1.touch()
+        file2.touch()
+
+        original_unlink = Path.unlink
+
+        def mock_unlink(self):
+            if self == file2:
+                raise Exception("Mocked error")
+            return original_unlink(self)
+
+        monkeypatch.setattr(Path, "unlink", mock_unlink)
+
+        remover = PDFRemove(tmp_folder)
         remover.remove_pdfs()
 
+        mock_warning.assert_called()
+        assert not file1.exists()
+        assert file2.exists()
 
-# === TESTES COM MOCAGEM DE FALHAS ===
+    @patch.object(logger, "error")
+    def test_remove_pdfs_folder_error(self, mock_error, monkeypatch):
+        """Testa erro ao listar arquivos.
 
-def test_zip_file_write_error(pdf_files):
-    """
-    Verifica se erro ao escrever arquivos no ZIP é tratado.
-    """
-    compressor = ZipCompressor(folder=pdf_files)
-    zip_path = pdf_files / "fail.zip"
-    pdfs = list(pdf_files.rglob("*.pdf"))
+        Verifica:
+            - Exceção é propagada
+            - Erro é logado
+        """
 
-    with patch.object(zipfile.ZipFile, "write", side_effect=Exception("Erro ao escrever")):
-        with patch.object(compressor, "_get_pdf_files", return_value=pdfs):
-            compressor._compress_files(zip_path)
+        def mock_rglob(self, pattern):
+            raise Exception("Erro simulado ao listar arquivos")
 
+        monkeypatch.setattr(Path, "rglob", mock_rglob)
 
-def test_zip_get_zip_path_type_error(tmp_path):
-    """
-    Verifica se erro de tipo ao passar nome do ZIP é tratado.
-    """
-    compressor = ZipCompressor(folder=tmp_path)
-    zip_name = 123  # tipo errado
+        with tempfile.TemporaryDirectory() as temp_dir:
+            remover = PDFRemove(Path(temp_dir))
+            with pytest.raises(Exception):
+                remover.remove_pdfs()
 
-    with pytest.raises(TypeError):
-        compressor._get_zip_path(zip_name)
-
-
-# === TESTES DE LOGGERS ===
-
-def test_logger_error_on_create_zip(tmp_path):
-    """
-    Verifica se erro é registrado pelo logger.error na criação do ZIP.
-    """
-    compressor = ZipCompressor(folder=tmp_path)
-
-    with patch("dataweaver.scraper.modules.zip_compressor.logger.error") as mock_logger:
-        with patch.object(compressor, "_get_zip_path", side_effect=Exception("Falha")):
-            compressor.create_zip("erro.zip")
-            mock_logger.assert_called()
+        mock_error.assert_called_once()
+        assert "Erro ao buscar arquivos PDF" in mock_error.call_args[0][0]
 
 
-def test_logger_warning_on_write_pdf_error(tmp_path):
-    """
-    Verifica se erro ao escrever arquivo no ZIP aciona logger.warning.
-    """
-    pdf_path = tmp_path / "file.pdf"
-    pdf_path.write_text("conteúdo")
-    compressor = ZipCompressor(folder=tmp_path)
-    zip_path = tmp_path / "log.zip"
+class TestZipCompressorDecorators:
+    """Testes para os decoradores de ZipCompressor."""
 
-    with patch.object(Path, "relative_to", side_effect=Exception("erro")):
-        with patch("dataweaver.scraper.modules.zip_compressor.logger.warning") as mock_warning:
-            compressor._compress_files(zip_path)
-            assert mock_warning.called
+    def test_base_decorator(self):
+        """Testa o decorador base.
 
+        Verifica:
+            - Delega chamadas para o compressor interno
+        """
+        mock_compressor = MagicMock()
+        decorator = ZipCompressorDecorator(mock_compressor)
+        decorator.create_zip("test.zip")
+        mock_compressor.create_zip.assert_called_once_with("test.zip")
 
-def test_logger_warning_on_pdf_remove(tmp_path):
-    """
-    Verifica se erro ao remover PDF aciona logger.warning.
-    """
-    pdf_path = tmp_path / "file.pdf"
-    pdf_path.write_text("conteúdo")
-    remover = PDFRemove(folder=tmp_path)
+    @patch.object(logger, "info")
+    def test_logging_decorator(self, mock_info):
+        """Testa o decorador de logging.
 
-    with patch.object(Path, "unlink", side_effect=Exception("erro")):
-        with patch("dataweaver.scraper.modules.zip_compressor.logger.warning") as mock_warning:
-            remover.remove_pdfs()
-            assert mock_warning.called
+        Verifica:
+            - Adiciona logs antes/depois da operação
+            - Delega para o compressor interno
+        """
+        mock_compressor = MagicMock()
+        decorator = LoggingZipCompressor(mock_compressor)
+        decorator.create_zip("test.zip")
 
+        mock_info.assert_any_call("Iniciando compressão: test.zip")
+        mock_info.assert_any_call("Compressão concluída: test.zip")
+        mock_compressor.create_zip.assert_called_once_with("test.zip")
 
-def test_logger_error_on_pdf_search(tmp_path):
-    """
-    Verifica se erro ao buscar PDFs aciona logger.error no PDFRemove.
-    """
-    remover = PDFRemove(folder=tmp_path)
+    def test_validation_decorator_success(self):
+        """Testa validação com nome correto.
 
-    with patch("pathlib.Path.rglob", side_effect=Exception("Erro")):
-        with patch("dataweaver.scraper.modules.zip_compressor.logger.error") as mock_error:
-            remover.remove_pdfs()
-            assert mock_error.called
+        Verifica:
+            - Aceita nomes com .zip
+            - Delega para o compressor interno
+        """
+        mock_compressor = MagicMock()
+        decorator = ValidationZipCompressor(mock_compressor)
+        decorator.create_zip("valid.zip")
+        mock_compressor.create_zip.assert_called_once_with("valid.zip")
 
+    def test_validation_decorator_failure(self):
+        """Testa validação com nome inválido.
 
-def test_logger_error_on_pdf_discovery(tmp_path):
-    """
-    Verifica se erro ao buscar PDFs aciona logger.error no ZipCompressor.
-    """
-    compressor = ZipCompressor(folder=tmp_path)
+        Verifica:
+            - Rejeita nomes sem .zip
+            - Não delega para o compressor
+            - Levanta ValueError
+        """
+        mock_compressor = MagicMock()
+        decorator = ValidationZipCompressor(mock_compressor)
 
-    with patch("pathlib.Path.rglob", side_effect=Exception("Erro")):
-        with patch("dataweaver.scraper.modules.zip_compressor.logger.error") as mock_error:
-            compressor._get_pdf_files()
-            assert mock_error.called
+        with pytest.raises(ValueError, match="Nome do arquivo ZIP inválido"):
+            decorator.create_zip("invalid_file")
+
+        mock_compressor.create_zip.assert_not_called()

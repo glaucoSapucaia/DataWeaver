@@ -1,7 +1,20 @@
-from .base import (FileManagerInterface, ZipCompressorInterface, PDFScraperInterface,
-                   PDFProcessingServiceInterface, PDFRemoveInterface, HttpClientInterface,
-                   PDFExtractorStrategyInterface)
+from .base import (
+    PDFScraperInterface,
+    FileManagerInterface,
+    ZipCompressorInterface,
+    PDFRemoveInterface,
+    HttpClientInterface,
+    PDFExtractionStrategy,
+    PDFServiceAbstractFactory,
+    PDFProcessingServiceInterface,
+)
 
-__all__ = ['FileManagerInterface', 'ZipCompressorInterface', 'PDFScraperInterface',
-           'PDFProcessingServiceInterface', 'PDFRemoveInterface', 'HttpClientInterface',
-           'PDFExtractorStrategyInterface']
+__all__ = [
+    "FileManagerInterface",
+    "ZipCompressorInterface",
+    "PDFScraperInterface",
+    "PDFRemoveInterface",
+    "HttpClientInterface",
+    "PDFExtractionStrategy",
+    "PDFServiceAbstractFactory",
+]

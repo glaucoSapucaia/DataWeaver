@@ -1,11 +1,5 @@
-"""
-Funções auxiliares para leitura e validação de variáveis de ambiente.
-
-Este módulo fornece utilitários para acessar variáveis de ambiente
-com valores padrão seguros.
-"""
-
 import os
+
 
 def get_env_variable(var_name: str, default: str) -> str:
     """
@@ -21,7 +15,7 @@ def get_env_variable(var_name: str, default: str) -> str:
         str: Valor da variável de ambiente ou o valor padrão fornecido.
     """
     value = os.getenv(var_name)
-    
+
     if value is None or not value.strip():
         return default
 

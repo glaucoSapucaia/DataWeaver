@@ -1,11 +1,15 @@
-from dataweaver.config.paths import PDF_ZIP_FILE, DESTINATION_FOLDER
-from dataweaver.scraper.utils import ensure_directory_exists
-from dataweaver.config.logger import logger
+from dataweaver.settings import *
+from dataweaver.utils import ensure_directory_exists
+
 import zipfile
 
-if not ensure_directory_exists(DESTINATION_FOLDER):
-    logger.error(f"Erro ao criar diretório {DESTINATION_FOLDER}")
+
+zip_pdf_file = config.scraper.zip_name
+zip_folder = config.dirs.pdfs
+
+if not ensure_directory_exists(zip_folder):
+    logger.error(f"Erro ao criar diretório {zip_folder}")
     exit(1)
 
-with zipfile.ZipFile(PDF_ZIP_FILE, "r") as zip_file:
-    zip_file.extractall(DESTINATION_FOLDER)
+with zipfile.ZipFile(zip_pdf_file, "r") as zip_file:
+    zip_file.extractall(zip_folder)

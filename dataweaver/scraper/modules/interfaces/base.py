@@ -1,119 +1,152 @@
-"""
-Este módulo define interfaces (ABCs) que padronizam a implementação de funcionalidades
-relacionadas à extração, download, compressão e remoção de arquivos PDF, bem como
-a comunicação HTTP necessária para essas operações.
-
-Cada interface descreve contratos que devem ser seguidos pelas implementações concretas,
-garantindo consistência e modularidade no sistema.
-"""
-
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from bs4 import BeautifulSoup  # type: ignore
+    from bs4 import BeautifulSoup
 
 
 class PDFScraperInterface(ABC):
-    """Interface para classes que extraem links de arquivos PDF de uma página web."""
+    """Interface para classes que extraem links de arquivos PDF de uma página web.
+
+    Design Pattern:
+        Strategy (via composição com PDFExtractionStrategy).
+    """
 
     @abstractmethod
-    def get_pdf_links(self, url: str) -> list:
-        """
-        Obtém os links dos arquivos PDF.
+    def get_pdf_links(self, url: str) -> list[str]:
+        """Obtém os links dos arquivos PDF.
 
-        Parâmetros:
-            url (str): URL da página a ser analisada.
+        Args:
+            url: URL da página a ser analisada.
 
-        Retorna:
-            list: Lista de URLs dos arquivos PDF encontrados.
+        Returns:
+            Lista de URLs absolutos dos arquivos PDF encontrados.
         """
         pass
 
 
 class FileManagerInterface(ABC):
-    """Interface para classes responsáveis pelo gerenciamento de arquivos, como download e armazenamento."""
+    """Interface para gerenciamento de arquivos (download/armazenamento)."""
 
     @abstractmethod
     def save_file(self, url: str) -> None:
-        """
-        Faz o download de um arquivo e o salva no local especificado.
+        """Faz o download de um arquivo e o salva no local especificado.
 
-        Parâmetros:
-            url (str): URL do arquivo a ser baixado.
+        Args:
+            url: URL do arquivo a ser baixado.
         """
         pass
 
 
 class ZipCompressorInterface(ABC):
-    """Interface para classes responsáveis por criar arquivos ZIP com arquivos específicos."""
+    """Interface para compressão de arquivos em ZIP."""
 
     @abstractmethod
     def create_zip(self, zip_name: str) -> None:
-        """
-        Cria um arquivo ZIP com os arquivos especificados.
+        """Cria um arquivo ZIP com os arquivos gerenciados pela FileManagerInterface.
 
-        Parâmetros:
-            zip_name (str): Nome do arquivo ZIP a ser criado.
+        Args:
+            zip_name: Nome do arquivo ZIP (com extensão).
         """
         pass
 
 
 class PDFProcessingServiceInterface(ABC):
-    """Interface para classes que gerenciam o processo de busca, download e compressão de arquivos PDF."""
+    """Interface para o serviço completo de processamento de PDFs.
+
+    Design Pattern:
+        Facade (simplifica operações complexas: scrape/download/compressão).
+    """
 
     @abstractmethod
     def process(self, url: str) -> None:
-        """
-        Executa o processo completo de busca, download e compactação dos arquivos PDF.
+        """Executa o pipeline completo: busca, download e compactação de PDFs.
 
-        Parâmetros:
-            url (str): URL da página web de onde os PDFs serão baixados.
+        Args:
+            url: URL da página web alvo.
         """
         pass
 
 
 class PDFRemoveInterface(ABC):
-    """Interface para classes responsáveis pela remoção de arquivos PDF armazenados localmente."""
+    """Interface para remoção segura de PDFs locais."""
 
     @abstractmethod
     def remove_pdfs(self) -> None:
-        """
-        Remove os arquivos PDF armazenados localmente.
-        """
+        """Remove todos os PDFs baixados durante o processamento."""
         pass
 
 
 class HttpClientInterface(ABC):
-    """Interface para um cliente HTTP genérico, utilizado para realizar requisições a páginas web."""
+    """Interface para clientes HTTP (ex: requests, aiohttp)."""
 
     @abstractmethod
     def fetch_html(self, url: str) -> str:
-        """
-        Faz uma requisição HTTP GET e retorna o conteúdo HTML da resposta.
+        """Obtém o HTML bruto de uma URL.
 
-        Parâmetros:
-            url (str): URL da página a ser requisitada.
+        Args:
+            url: Endereço web alvo.
 
-        Retorna:
-            str: Conteúdo HTML da resposta.
+        Returns:
+            HTML da página como string.
         """
         pass
 
 
-class PDFExtractorStrategyInterface(ABC):
-    """Interface para estratégias de extração de links de PDFs a partir do conteúdo HTML de uma página."""
+class PDFExtractionStrategy(ABC):
+    """Interface para estratégias de extração de links PDF.
+
+    Design Pattern:
+        Strategy (permite variações na lógica de extração).
+    """
 
     @abstractmethod
-    def extract(self, soup: 'BeautifulSoup', base_url: str) -> list[str]:
-        """
-        Extrai links de arquivos PDF a partir do conteúdo HTML da página.
+    def extract(self, soup: "BeautifulSoup", base_url: str) -> set[str]:
+        """Extrai links de PDFs de um objeto BeautifulSoup.
 
-        Parâmetros:
-            soup (BeautifulSoup): Objeto BeautifulSoup com o HTML da página.
-            base_url (str): URL base da página para resolver links relativos.
+        Args:
+            soup: Objeto parseado do HTML.
+            base_url: URL base para resolver links relativos.
 
-        Retorna:
-            list[str]: Lista de URLs de arquivos PDF.
+        Returns:
+            Conjunto de URLs absolutos de PDFs.
         """
+        pass
+
+
+class PDFServiceAbstractFactory(ABC):
+    """Interface para fábrica abstrata de componentes do serviço de PDF.
+
+    Design Pattern:
+        Abstract Factory (familia de objetos relacionados).
+    """
+
+    @abstractmethod
+    def create_http_client(self) -> HttpClientInterface:
+        """Cria um cliente HTTP específico da implementação."""
+        pass
+
+    @abstractmethod
+    def create_link_extractor(self) -> PDFExtractionStrategy:
+        """Cria uma estratégia de extração de links."""
+        pass
+
+    @abstractmethod
+    def create_scraper(self) -> PDFScraperInterface:
+        """Cria um scraper de PDF configurado."""
+        pass
+
+    @abstractmethod
+    def create_file_manager(self) -> FileManagerInterface:
+        """Cria um gerenciador de arquivos."""
+        pass
+
+    @abstractmethod
+    def create_zip_compressor(self) -> ZipCompressorInterface:
+        """Cria um compressor ZIP."""
+        pass
+
+    @abstractmethod
+    def create_pdf_remover(self) -> PDFRemoveInterface:
+        """Cria um removedor de PDFs temporários."""
         pass
