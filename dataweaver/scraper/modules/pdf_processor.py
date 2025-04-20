@@ -1,5 +1,5 @@
 """
-Pipeline - Fluxo Completo de Processamento
+Pipeline Scraper - Fluxo Completo de Processamento
 """
 
 from .interfaces import PDFProcessingServiceInterface
@@ -13,7 +13,6 @@ if TYPE_CHECKING:
         PDFScraperInterface,
         FileManagerInterface,
         ZipCompressorInterface,
-        PDFRemoveInterface,
     )
 
 
@@ -28,28 +27,28 @@ class PDFProcessingService(PDFProcessingServiceInterface):
         1. Extração de links PDF
         2. Download dos arquivos
         3. Compactação em ZIP
-        4. Limpeza dos arquivos temporários
     """
 
     def __init__(
         self,
         zip_name: str,
+        file_extension: str,
         scraper: "PDFScraperInterface",
         file_manager: "FileManagerInterface",
         zip_compressor: "ZipCompressorInterface",
-        pdf_remove: "PDFRemoveInterface",
     ) -> None:
         """Inicializa o serviço com seus componentes.
 
         Args:
             zip_name: Nome do arquivo ZIP de saída
+            file_extension: Extensão do arqvuio alvo (pdf)
             scraper: Componente para extração de links PDF
             file_manager: Componente para download de arquivos
             zip_compressor: Será automaticamente decorado com
                             Validation + Logging decorators
-            pdf_remove: Componente para remoção de arquivos temporários
         """
         self.zip_name = zip_name
+        self.file_extension = file_extension
         self.scraper = scraper
         self.file_manager = file_manager
 
@@ -58,8 +57,6 @@ class PDFProcessingService(PDFProcessingServiceInterface):
             LoggingZipCompressor(zip_compressor)
         )
 
-        self.pdf_remove = pdf_remove
-
     def process(self, url: str) -> None:
         """Executa o pipeline completo de processamento de PDFs.
 
@@ -67,7 +64,6 @@ class PDFProcessingService(PDFProcessingServiceInterface):
             1. Extrai links de PDFs da URL fornecida
             2. Baixa cada arquivo individualmente
             3. Compacta todos em um único ZIP
-            4. Remove os PDFs baixados
 
         Args:
             url: URL da página contendo os PDFs
@@ -97,12 +93,7 @@ class PDFProcessingService(PDFProcessingServiceInterface):
                     continue
 
             logger.info("Compactando arquivos...")
-            self.zip_compressor.create_zip(self.zip_name)
-
-            logger.info("Limpando arquivos temporários...")
-            self.pdf_remove.remove_pdfs()
-
-            logger.info("Processo concluído com sucesso!")
+            self.zip_compressor.create_zip(self.zip_name, self.file_extension)
 
         except Exception as e:
             logger.critical(f"Falha crítica no processamento: {str(e)}")

@@ -25,12 +25,12 @@ coverage.xml
 .cache/
 
 # 📊 Dados gerados / temporários
-data/
 logs/
 *.log
 *.sqlite3
 *.db
 pdfs/
+csv/
 
 # 🧠 IDEs e editores
 .vscode/
