@@ -19,6 +19,7 @@ if TYPE_CHECKING:
         FileManagerInterface,
         ZipCompressorInterface,
         PDFProcessingServiceInterface,
+        PDFExtractionStrategy,
     )
     from pathlib import Path
 
@@ -54,7 +55,7 @@ class DefaultPDFServiceFactory(PDFServiceAbstractFactory):
         """
         return RequestsHttpClient()
 
-    def create_link_extractor(self) -> "PDFLinkExtractor":
+    def create_link_extractor(self) -> "PDFExtractionStrategy":
         """Cria um PDFLinkExtractor com estratégias de extração de:
         - Links em tags ``<a>`` (AnchorPDFExtractionStrategy)
         - Links em parágrafos (ParagraphPDFExtractionStrategy)

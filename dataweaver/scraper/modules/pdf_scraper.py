@@ -29,7 +29,7 @@ class RequestsPDFScraper(PDFScraperInterface):
             soup = BeautifulSoup(html, "html.parser")
             return self.extractor.extract(soup, url)
         except Exception as e:
-            logger.exception("Erro ao extrair PDFs")  # .exception inclui traceback
+            logger.error("Erro ao extrair PDFs")
             raise LinkPDFExtractionError(f"Erro ao processar a URL: {url}")
 
 
@@ -86,7 +86,7 @@ class ParagraphPDFExtractionStrategy(PDFExtractionStrategy):
         return links
 
 
-class PDFLinkExtractor:
+class PDFLinkExtractor(PDFExtractionStrategy):
     """Agrega múltiplas estratégias de extração de links PDF.
 
     Padrão de Projeto:

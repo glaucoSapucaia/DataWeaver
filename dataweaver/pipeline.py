@@ -11,14 +11,14 @@ from .settings import config, logger
 class PDFProcessor:
     """Classe para processamento de PDFs"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.pdfs_dir = config.dirs.pdfs
         self.zip_name = config.scraper.zip_name
         self.key_filter = config.scraper.filter
         self.url = config.scraper.url
         self.pdf_extension = "pdf"
 
-    def run(self):
+    def run(self) -> None:
         """Executa o processo completo de coleta e compactação de PDFs"""
         logger.info("Iniciando o serviço de processamento de PDFs...")
 
@@ -33,7 +33,7 @@ class PDFProcessor:
 class CSVExtractor:
     """Classe para extração de dados de PDF para CSV"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.csv_dir = config.dirs.csv
         self.csv_extension = "csv"
         self.csv_zip_file = self.csv_dir / config.data.zip_name
@@ -41,12 +41,12 @@ class CSVExtractor:
 
         ensure_directory_exists(self.csv_dir)
 
-    def set_pdf_file(self, pdf_filename):
+    def set_pdf_file(self, pdf_filename: str) -> None:
         """Configura o arquivo PDF a ser processado"""
         self.pdf_file = config.dirs.pdfs / pdf_filename
         self.csv_file = self.csv_dir / f"{pdf_filename.rsplit('.', 1)[0]}.csv"
 
-    def run(self):
+    def run(self) -> None:
         """Executa a extração de dados da tabela do PDF"""
         if not hasattr(self, "pdf_file"):
             raise ValueError("PDF file not set. Use set_pdf_file() first.")
@@ -65,10 +65,10 @@ class CSVExtractor:
 class CleanupManager:
     """Classe para gerenciar a limpeza de arquivos temporários"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.pdfs_dir = config.dirs.pdfs
 
-    def run(self):
+    def run(self) -> None:
         """Executa a limpeza dos arquivos PDF temporários"""
         logger.info("Limpando arquivos temporários...")
         pdf_remove = PDFRemove(self.pdfs_dir)
