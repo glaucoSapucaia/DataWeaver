@@ -76,15 +76,9 @@ class DefaultPDFServiceFactory(PDFServiceAbstractFactory):
         """
         return ZipCompressor(self.pdfs_dir)
 
-    def create_pdf_remover(self) -> PDFRemoveInterface:
-        """Cria um removedor de PDFs temporários.
-
-        Returns:
-            PDFRemove configurado com pdfs_dir.
-        """
-        return PDFRemove(self.pdfs_dir)
-
-    def create_service(self, zip_name: str) -> PDFProcessingService:
+    def create_service(
+        self, zip_name: str, file_extension: str
+    ) -> PDFProcessingService:
         """Monta o serviço completo de processamento de PDFs.
 
         Args:
@@ -100,8 +94,8 @@ class DefaultPDFServiceFactory(PDFServiceAbstractFactory):
         """
         return PDFProcessingService(
             zip_name,
+            file_extension,
             self.create_scraper(),
             self.create_file_manager(),
             self.create_zip_compressor(),
-            self.create_pdf_remover(),
         )

@@ -42,7 +42,7 @@ class ZipCompressorInterface(ABC):
     """Interface para compressão de arquivos em ZIP."""
 
     @abstractmethod
-    def create_zip(self, zip_name: str) -> None:
+    def create_zip(self, zip_name: str, file_extension: str) -> None:
         """Cria um arquivo ZIP com os arquivos gerenciados pela FileManagerInterface.
 
         Args:
@@ -144,9 +144,4 @@ class PDFServiceAbstractFactory(ABC):
     @abstractmethod
     def create_zip_compressor(self) -> ZipCompressorInterface:
         """Cria um compressor ZIP."""
-        pass
-
-    @abstractmethod
-    def create_pdf_remover(self) -> PDFRemoveInterface:
-        """Cria um removedor de PDFs temporários."""
         pass

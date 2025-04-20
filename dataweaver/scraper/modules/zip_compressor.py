@@ -18,7 +18,7 @@ class ZipCompressor(ZipCompressorInterface):
     def __init__(self, folder: "Path") -> None:
         self.folder = folder
 
-    def create_zip(self, zip_name: str) -> None:
+    def create_zip(self, zip_name: str, file_extension: str) -> None:
         """Cria arquivo ZIP contendo todos os PDFs do diretório.
 
         Args:
@@ -30,8 +30,8 @@ class ZipCompressor(ZipCompressorInterface):
         """
         try:
             zip_path = self._get_zip_path(zip_name)
-            self._compress_files(zip_path)
-            logger.info(f"Arquivo {zip_name} criado com sucesso")
+            self._compress_files(zip_path, file_extension)
+            logger.info(f"Arquivo CSV criado com sucesso.")
         except Exception as e:
             logger.error(f"Falha ao criar {zip_name}: {e}")
             raise
@@ -47,17 +47,9 @@ class ZipCompressor(ZipCompressorInterface):
         """
         return self.folder / f"{zip_name}"
 
-    def _compress_files(self, zip_path: "Path") -> None:
-        """Adiciona PDFs ao arquivo ZIP.
-
-        Args:
-            zip_path: Localização do arquivo ZIP a ser criado
-
-        Note:
-            Ignora arquivos problemáticos individualmente
-        """
+    def _compress_files(self, zip_path: "Path", extension: str) -> None:
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            for file_path in self._get_pdf_files():
+            for file_path in self._get_files_by_extension(extension):
                 try:
                     arcname = file_path.relative_to(self.folder)
                     zipf.write(file_path, arcname)
@@ -65,19 +57,11 @@ class ZipCompressor(ZipCompressorInterface):
                 except Exception as e:
                     logger.warning(f"Pulando {file_path.name}: {e}")
 
-    def _get_pdf_files(self) -> list["Path"]:
-        """Lista todos os PDFs no diretório.
-
-        Returns:
-            Lista de Paths para arquivos .pdf
-
-        Raises:
-            Exception: Se não conseguir ler o diretório
-        """
+    def _get_files_by_extension(self, extension: str) -> list["Path"]:
         try:
-            return [f for f in self.folder.glob("*.pdf") if f.is_file()]
+            return [f for f in self.folder.glob(f"*.{extension}") if f.is_file()]
         except Exception as e:
-            logger.error(f"Falha ao listar PDFs: {e}")
+            logger.error(f"Falha ao listar {extension.upper()}s: {e}")
             raise
 
 
@@ -96,13 +80,13 @@ class ZipCompressorDecorator(ZipCompressorInterface):
         """
         self._compressor = compressor
 
-    def create_zip(self, zip_name: str) -> None:
+    def create_zip(self, zip_name: str, file_extension: str) -> None:
         """Delega a operação para o compressor interno.
 
         Args:
             zip_name: Nome do arquivo ZIP
         """
-        self._compressor.create_zip(zip_name)
+        self._compressor.create_zip(zip_name, file_extension)
 
 
 class LoggingZipCompressor(ZipCompressorDecorator):
@@ -112,15 +96,15 @@ class LoggingZipCompressor(ZipCompressorDecorator):
         Decorator - estende funcionalidade sem modificar a classe original
     """
 
-    def create_zip(self, zip_name: str) -> None:
+    def create_zip(self, zip_name: str, file_extension: str) -> None:
         """Adiciona logs antes e após a compressão.
 
         Args:
             zip_name: Nome do arquivo ZIP
         """
-        logger.info(f"[DECORATOR] Iniciando compressão: {zip_name}")
-        super().create_zip(zip_name)
-        logger.info(f"[DECORATOR] Compressão finalizada: {zip_name}")
+        logger.info(f"[DECORATOR] Iniciando compressão do CSV...")
+        super().create_zip(zip_name, file_extension)
+        logger.info(f"[DECORATOR] Compressão do CSV finalizada.")
 
 
 class ValidationZipCompressor(ZipCompressorDecorator):
@@ -130,7 +114,7 @@ class ValidationZipCompressor(ZipCompressorDecorator):
         Decorator - adiciona validação prévia
     """
 
-    def create_zip(self, zip_name: str) -> None:
+    def create_zip(self, zip_name: str, file_extension: str) -> None:
         """Valida se o nome termina com .zip antes de comprimir.
 
         Args:
@@ -139,9 +123,9 @@ class ValidationZipCompressor(ZipCompressorDecorator):
         Raises:
             ValueError: Se o nome for inválido
         """
-        if not zip_name.endswith(".zip"):
+        if not str(zip_name).endswith(".zip"):
             raise ValueError("O nome do arquivo deve terminar com .zip")
-        super().create_zip(zip_name)
+        super().create_zip(zip_name, file_extension)
 
 
 class PDFRemove(PDFRemoveInterface):

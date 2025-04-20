@@ -1,7 +1,7 @@
 from dataweaver.settings import config, logger
 from dataweaver.scraper.modules import DefaultPDFServiceFactory
-from dataweaver.utils.zip_extractor import zip_file_extractor
 from dataweaver.data.modules import TableExtractor
+from dataweaver.scraper.modules import PDFRemove
 
 # Configurações do usuário
 url = config.scraper.url
@@ -10,6 +10,9 @@ key_filter = config.scraper.filter
 
 pdfs_dir = config.dirs.pdfs
 
+pdf_extension = "pdf"
+csv_extension = "csv"
+
 if __name__ == "__main__":
     logger.info("Iniciando o serviço de processamento de PDFs...")
 
@@ -17,7 +20,7 @@ if __name__ == "__main__":
     factory = DefaultPDFServiceFactory(pdfs_dir, key_filter)
 
     # Cria o serviço
-    service = factory.create_service(zip_name)
+    service = factory.create_service(zip_name, pdf_extension)
 
     logger.info("Executando o processo de coleta e compactação dos PDFs...")
     service.process(url)
@@ -25,10 +28,6 @@ if __name__ == "__main__":
 
     # Caminho completo do arquivo ZIP gerado
     full_path_zip = pdfs_dir / zip_name
-
-    logger.info("Extraindo arquivos do ZIP...")
-    zip_file_extractor(full_path_zip, pdfs_dir)
-    logger.info("Extração concluída!")
 
     # Define e cria o diretório onde os arquivos CSV serão armazenados
     csv_dir = config.dirs.csv
@@ -47,6 +46,13 @@ if __name__ == "__main__":
     abbreviations_dict = {"OD": "Seg. Odontológica", "AMB": "Seg. Ambulatorial"}
 
     logger.info("Iniciando extração de dados da tabela do PDF...")
-    extractor = TableExtractor(pdf_file, csv_file, csv_zip_file, abbreviations_dict)
+    extractor = TableExtractor(
+        pdf_file, csv_file, csv_zip_file, csv_extension, abbreviations_dict
+    )
     extractor.run()
+
+    logger.info("Limpando arquivos temporários...")
+    pdf_remove = PDFRemove(pdfs_dir)
+    pdf_remove.remove_pdfs()
+
     logger.info("Extração de dados concluída com sucesso!")

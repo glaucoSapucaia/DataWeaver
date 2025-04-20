@@ -1,4 +1,5 @@
 from .interfaces import CSVSaverInterface
+from dataweaver.settings import logger
 from typing import TYPE_CHECKING
 
 # Importação para tipagem
@@ -33,9 +34,11 @@ class CsvSaver(CSVSaverInterface):
         Parâmetros:
         data_frame: O DataFrame a ser salvo como arquivo CSV.
         """
-        # debug
-        print(f"DataFrame para salvar:\n{data_frame.head()}")
 
-        data_frame.to_csv(str(self.csv_path), index=False, header=True)
+        logger.info("Convertendo tabela para CSV...")
+
+        data_frame.to_csv(
+            str(self.csv_path), index=False, header=True, encoding="utf-8"
+        )
 
         return None

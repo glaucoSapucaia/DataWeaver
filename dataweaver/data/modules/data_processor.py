@@ -1,4 +1,5 @@
 from .interfaces import DataProcessorInterface
+from dataweaver.settings import logger
 import pandas as pd
 
 
@@ -32,31 +33,18 @@ class DataProcessor(DataProcessorInterface):
         if not tables:
             return pd.DataFrame
 
-        # debug
-        print(f"Tabelas extraídas: {len(tables)}")
-        print(f"0 - tabela extraída:\n{tables[0]}")
-        print(f"50 - tabela extraída:\n{tables[50]}")
-        print(f"100 - tabela extraída:\n{tables[100]}")
-        print(f"150 -  tabela extraída:\n{tables[150]}")
-        print(f"178 -  tabela extraída:\n{tables[178]}")
+        logger.info("Processando tabelas...")
 
         try:
             final_df = pd.concat(tables, axis=0)
+            logger.info("Concatenando tabelas...")
         except Exception as e:
-            # debug
-            print(f"ERRO na concatenação: {e}")
+            logger.error(f"ERRO na concatenação: {e}")
 
             return pd.DataFrame()
 
         final_df = final_df.rename(columns=self.abbreviation_dict)
 
-        # debug
-        print("\nTabela final após processamento:")
-        print(final_df.tail())
-
-        colunas_lista = final_df.columns.tolist()
-
-        # degbug
-        print(colunas_lista)
+        logger.info("Tabelas concatenadas!")
 
         return final_df

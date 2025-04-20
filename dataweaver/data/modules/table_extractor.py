@@ -1,8 +1,14 @@
 from .interfaces import TableExtractorInterface
 from .pdf_extractor import PdfExtractor
 from .data_processor import DataProcessor
+from dataweaver.scraper.modules import PDFRemove
 from .csv_saver import CsvSaver
-from .zip_compressor import ZipCompressor
+from dataweaver.scraper.modules import ZipCompressor
+from dataweaver.settings import logger
+from dataweaver.scraper.modules.zip_compressor import (
+    ValidationZipCompressor,
+    LoggingZipCompressor,
+)
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -22,6 +28,7 @@ class TableExtractor(TableExtractorInterface):
         pdf_path: "Path",
         csv_path: "Path",
         zip_path: "Path",
+        file_extension: str,
         abbreviation_dict: dict,
     ) -> None:
         """
@@ -36,12 +43,15 @@ class TableExtractor(TableExtractorInterface):
         self.pdf_path = pdf_path
         self.csv_path = csv_path
         self.zip_path = zip_path
+        self.file_extension = file_extension
         self.abbreviation_dict = abbreviation_dict
 
         self.pdf_extractor = PdfExtractor(pdf_path)
         self.data_processor = DataProcessor(abbreviation_dict)
         self.csv_saver = CsvSaver(csv_path)
-        self.zip_compressor = ZipCompressor(zip_path)
+        self.zip_compressor = ValidationZipCompressor(
+            LoggingZipCompressor(ZipCompressor(self.zip_path.parent))
+        )
 
     def run(self) -> None:
         """
@@ -56,25 +66,20 @@ class TableExtractor(TableExtractorInterface):
         """
         tables = self.pdf_extractor.extract_tables(pages="3-181")
         if not tables:
-            # debug
-            print("Nenhuma tabela encontrada.")
+            logger.warning("Nenhuma tabela encontrada.")
 
             return None
 
-        # debug
-        print(
+        logger.info(
             f"Tabela extraída com sucesso - Total de linhas da página um: {len(tables[0])}."
         )
 
         table_df = self.data_processor.process_data(tables)
 
         self.csv_saver.save_csv(table_df)
-        # debug
-        print(f"Arquivo CSV criado - {self.csv_path}")
+        logger.info("Arquivo CSV salvo.")
 
-        self.zip_compressor.compress(self.csv_path)
-        # debug
-        print(f"Tabela salva e compactada em {self.zip_path}")
-        print(table_df.iloc[:, :5])
+        self.zip_compressor.create_zip(self.zip_path, self.file_extension)
+        logger.info(f"Tabela salva e compactada!")
 
         return None
