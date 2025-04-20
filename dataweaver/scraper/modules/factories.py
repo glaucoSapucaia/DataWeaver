@@ -1,8 +1,25 @@
-from dataweaver.scraper.modules.interfaces import *
-from dataweaver.scraper.modules import *
+from .interfaces import PDFServiceAbstractFactory
+from .pdf_scraper import (
+    RequestsHttpClient,
+    PDFLinkExtractor,
+    AnchorPDFExtractionStrategy,
+    ParagraphPDFExtractionStrategy,
+    RequestsPDFScraper,
+)
+from .file_manager import FileManager
+from .zip_compressor import ZipCompressor
+from .pdf_processor import PDFProcessingService
+
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from .interfaces import (
+        HttpClientInterface,
+        PDFScraperInterface,
+        FileManagerInterface,
+        ZipCompressorInterface,
+        PDFProcessingServiceInterface,
+    )
     from pathlib import Path
 
 
@@ -15,7 +32,6 @@ class DefaultPDFServiceFactory(PDFServiceAbstractFactory):
     - Scraper
     - Gerenciador de arquivos
     - Compressor ZIP
-    - Removedor de PDFs
 
     Design Patterns:
         Abstract Factory (implementa PDFServiceAbstractFactory).
@@ -30,7 +46,7 @@ class DefaultPDFServiceFactory(PDFServiceAbstractFactory):
         self.pdfs_dir = pdfs_dir
         self.key_filter = key_filter
 
-    def create_http_client(self) -> HttpClientInterface:
+    def create_http_client(self) -> "HttpClientInterface":
         """Cria um cliente HTTP baseado na biblioteca requests.
 
         Returns:
@@ -38,7 +54,7 @@ class DefaultPDFServiceFactory(PDFServiceAbstractFactory):
         """
         return RequestsHttpClient()
 
-    def create_link_extractor(self) -> PDFLinkExtractor:
+    def create_link_extractor(self) -> "PDFLinkExtractor":
         """Cria um PDFLinkExtractor com estratégias de extração de:
         - Links em tags ``<a>`` (AnchorPDFExtractionStrategy)
         - Links em parágrafos (ParagraphPDFExtractionStrategy)
@@ -50,7 +66,7 @@ class DefaultPDFServiceFactory(PDFServiceAbstractFactory):
             ]
         )
 
-    def create_scraper(self) -> PDFScraperInterface:
+    def create_scraper(self) -> "PDFScraperInterface":
         """Cria um scraper de PDFs com dependências injetadas.
 
         Returns:
@@ -60,7 +76,7 @@ class DefaultPDFServiceFactory(PDFServiceAbstractFactory):
             self.create_http_client(), self.create_link_extractor()
         )
 
-    def create_file_manager(self) -> FileManagerInterface:
+    def create_file_manager(self) -> "FileManagerInterface":
         """Cria um gerenciador de arquivos para o diretório especificado.
 
         Returns:
@@ -68,7 +84,7 @@ class DefaultPDFServiceFactory(PDFServiceAbstractFactory):
         """
         return FileManager(self.pdfs_dir)
 
-    def create_zip_compressor(self) -> ZipCompressorInterface:
+    def create_zip_compressor(self) -> "ZipCompressorInterface":
         """Cria um compressor ZIP para o diretório de PDFs.
 
         Returns:
@@ -78,19 +94,21 @@ class DefaultPDFServiceFactory(PDFServiceAbstractFactory):
 
     def create_service(
         self, zip_name: str, file_extension: str
-    ) -> PDFProcessingService:
+    ) -> "PDFProcessingServiceInterface":
         """Monta o serviço completo de processamento de PDFs.
 
         Args:
             zip_name: Nome do arquivo ZIP de saída.
+            file_extension: Extensão do arquivo (pdf)
 
         Returns:
             PDFProcessingService
             com todos os componentes injetados:
+            - zip_name
+            - file_extension
             - Scraper
             - FileManager
             - ZipCompressor
-            - PDFRemover
         """
         return PDFProcessingService(
             zip_name,

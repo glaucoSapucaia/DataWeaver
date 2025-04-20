@@ -3,10 +3,8 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pandas import DataFrame
-    from pathlib import Path
 
 
-# Interfaces
 class PDFExtractorInterface(ABC):
     """
     Interface para a extração de tabelas de arquivos PDF.
@@ -60,25 +58,6 @@ class CSVSaverInterface(ABC):
 
         Parâmetros:
         data_frame: Dados a serem salvos no formato CSV.
-        """
-        pass
-
-
-class ZipCompressorInterface(ABC):
-    """
-    Interface para compressão de arquivos ZIP.
-
-    Esta classe abstrata define o método `compress`, que deve ser implementado por
-    qualquer classe que realize a compressão de arquivos em formato ZIP.
-    """
-
-    @abstractmethod
-    def compress(self, file_path: "Path") -> None:
-        """
-        Método abstrato para compactar arquivos.
-
-        Parâmetros:
-        file_path: Caminho do arquivo ou diretório a ser compactado.
         """
         pass
 

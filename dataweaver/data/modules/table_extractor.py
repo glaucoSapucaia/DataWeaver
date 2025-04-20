@@ -1,14 +1,19 @@
-from .interfaces import TableExtractorInterface
-from .pdf_extractor import PdfExtractor
-from .data_processor import DataProcessor
-from dataweaver.scraper.modules import PDFRemove
-from .csv_saver import CsvSaver
-from dataweaver.scraper.modules import ZipCompressor
-from dataweaver.settings import logger
-from dataweaver.scraper.modules.zip_compressor import (
+"""
+Pipeline Data - Fluxo Completo de Processamento
+"""
+
+from dataweaver.scraper.modules import (
+    ZipCompressor,
     ValidationZipCompressor,
     LoggingZipCompressor,
 )
+from dataweaver.errors import ExtractionError
+from dataweaver.settings import logger
+from .interfaces import TableExtractorInterface
+from .pdf_extractor import PdfExtractor
+from .data_processor import DataProcessor
+from .csv_saver import CsvSaver
+
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -38,6 +43,7 @@ class TableExtractor(TableExtractorInterface):
         - pdf_path (Path): Caminho do arquivo PDF de origem.
         - csv_path (Path): Caminho onde o CSV será salvo.
         - zip_path (Path): Caminho onde o arquivo compactado será armazenado.
+        - file_extension: Extensão do arquivo (csv).
         - abbreviation_dict (dict): Dicionário para renomear colunas no processamento de dados.
         """
         self.pdf_path = pdf_path
@@ -49,6 +55,8 @@ class TableExtractor(TableExtractorInterface):
         self.pdf_extractor = PdfExtractor(pdf_path)
         self.data_processor = DataProcessor(abbreviation_dict)
         self.csv_saver = CsvSaver(csv_path)
+
+        # ZipCompressor com Decorators
         self.zip_compressor = ValidationZipCompressor(
             LoggingZipCompressor(ZipCompressor(self.zip_path.parent))
         )
@@ -66,13 +74,10 @@ class TableExtractor(TableExtractorInterface):
         """
         tables = self.pdf_extractor.extract_tables(pages="3-181")
         if not tables:
-            logger.warning("Nenhuma tabela encontrada.")
+            logger.error("Nenhuma tabela encontrada durante a extração.")
+            raise ExtractionError("A extração do PDF não retornou nenhuma tabela.")
 
-            return None
-
-        logger.info(
-            f"Tabela extraída com sucesso - Total de linhas da página um: {len(tables[0])}."
-        )
+        logger.info(f"Tabela extraída com sucesso.")
 
         table_df = self.data_processor.process_data(tables)
 
@@ -81,5 +86,3 @@ class TableExtractor(TableExtractorInterface):
 
         self.zip_compressor.create_zip(self.zip_path, self.file_extension)
         logger.info(f"Tabela salva e compactada!")
-
-        return None

@@ -1,5 +1,5 @@
 """
-Pipeline - Fluxo Completo de Processamento
+Pipeline Scraper - Fluxo Completo de Processamento
 """
 
 from .interfaces import PDFProcessingServiceInterface
@@ -13,7 +13,6 @@ if TYPE_CHECKING:
         PDFScraperInterface,
         FileManagerInterface,
         ZipCompressorInterface,
-        PDFRemoveInterface,
     )
 
 
@@ -28,7 +27,6 @@ class PDFProcessingService(PDFProcessingServiceInterface):
         1. Extração de links PDF
         2. Download dos arquivos
         3. Compactação em ZIP
-        4. Limpeza dos arquivos temporários
     """
 
     def __init__(
@@ -43,11 +41,11 @@ class PDFProcessingService(PDFProcessingServiceInterface):
 
         Args:
             zip_name: Nome do arquivo ZIP de saída
+            file_extension: Extensão do arqvuio alvo (pdf)
             scraper: Componente para extração de links PDF
             file_manager: Componente para download de arquivos
             zip_compressor: Será automaticamente decorado com
                             Validation + Logging decorators
-            pdf_remove: Componente para remoção de arquivos temporários
         """
         self.zip_name = zip_name
         self.file_extension = file_extension
@@ -66,7 +64,6 @@ class PDFProcessingService(PDFProcessingServiceInterface):
             1. Extrai links de PDFs da URL fornecida
             2. Baixa cada arquivo individualmente
             3. Compacta todos em um único ZIP
-            4. Remove os PDFs baixados
 
         Args:
             url: URL da página contendo os PDFs

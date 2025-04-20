@@ -1,4 +1,4 @@
-from .interfaces import ZipCompressorInterface, PDFRemoveInterface
+from .interfaces import ZipCompressorInterface
 from dataweaver.settings import logger
 
 from typing import TYPE_CHECKING
@@ -23,6 +23,7 @@ class ZipCompressor(ZipCompressorInterface):
 
         Args:
             zip_name: Nome do arquivo ZIP
+            file_extension: Extensão do arquivos (PDF ou CSV)
 
         Raises:
             Exception: Se ocorrer erro durante a compressão
@@ -56,6 +57,7 @@ class ZipCompressor(ZipCompressorInterface):
                     logger.debug(f"Adicionado: {arcname}")
                 except Exception as e:
                     logger.warning(f"Pulando {file_path.name}: {e}")
+                    raise
 
     def _get_files_by_extension(self, extension: str) -> list["Path"]:
         try:
@@ -81,11 +83,7 @@ class ZipCompressorDecorator(ZipCompressorInterface):
         self._compressor = compressor
 
     def create_zip(self, zip_name: str, file_extension: str) -> None:
-        """Delega a operação para o compressor interno.
-
-        Args:
-            zip_name: Nome do arquivo ZIP
-        """
+        """Delega a operação para o compressor interno."""
         self._compressor.create_zip(zip_name, file_extension)
 
 
@@ -97,11 +95,7 @@ class LoggingZipCompressor(ZipCompressorDecorator):
     """
 
     def create_zip(self, zip_name: str, file_extension: str) -> None:
-        """Adiciona logs antes e após a compressão.
-
-        Args:
-            zip_name: Nome do arquivo ZIP
-        """
+        """Adiciona logs antes e após a compressão."""
         logger.info(f"[DECORATOR] Iniciando compressão do CSV...")
         super().create_zip(zip_name, file_extension)
         logger.info(f"[DECORATOR] Compressão do CSV finalizada.")
@@ -117,41 +111,9 @@ class ValidationZipCompressor(ZipCompressorDecorator):
     def create_zip(self, zip_name: str, file_extension: str) -> None:
         """Valida se o nome termina com .zip antes de comprimir.
 
-        Args:
-            zip_name: Nome do arquivo ZIP
-
         Raises:
             ValueError: Se o nome for inválido
         """
         if not str(zip_name).endswith(".zip"):
             raise ValueError("O nome do arquivo deve terminar com .zip")
         super().create_zip(zip_name, file_extension)
-
-
-class PDFRemove(PDFRemoveInterface):
-    """Responsável por limpar arquivos PDF após processamento.
-
-    SOLID:
-        Single Responsibility Principle - foca apenas na remoção
-    """
-
-    def __init__(self, folder: "Path") -> None:
-        self.folder = folder
-
-    def remove_pdfs(self) -> None:
-        """Remove todos os arquivos PDF do diretório.
-
-        Note:
-            Continua processo mesmo se alguns arquivos falharem
-            Logs para cada operação individual
-        """
-        try:
-            for pdf_file in self.folder.glob("*.pdf"):
-                try:
-                    pdf_file.unlink()
-                    logger.info(f"Removido: {pdf_file.name}")
-                except Exception as e:
-                    logger.warning(f"Falha ao remover {pdf_file.name}: {e}")
-        except Exception as e:
-            logger.error(f"Erro geral ao limpar PDFs: {e}")
-            raise

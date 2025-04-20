@@ -3,7 +3,6 @@ from .base import (
     DataProcessorInterface,
     PDFExtractorInterface,
     TableExtractorInterface,
-    ZipCompressorInterface,
 )
 
 __all__ = [
@@ -11,5 +10,4 @@ __all__ = [
     "DataProcessorInterface",
     "PDFExtractorInterface",
     "TableExtractorInterface",
-    "ZipCompressorInterface",
 ]

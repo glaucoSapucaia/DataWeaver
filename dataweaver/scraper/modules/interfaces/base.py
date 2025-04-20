@@ -68,15 +68,6 @@ class PDFProcessingServiceInterface(ABC):
         pass
 
 
-class PDFRemoveInterface(ABC):
-    """Interface para remoção segura de PDFs locais."""
-
-    @abstractmethod
-    def remove_pdfs(self) -> None:
-        """Remove todos os PDFs baixados durante o processamento."""
-        pass
-
-
 class HttpClientInterface(ABC):
     """Interface para clientes HTTP (ex: requests, aiohttp)."""
 

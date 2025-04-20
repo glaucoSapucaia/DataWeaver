@@ -1,9 +1,6 @@
 from dataweaver.settings import logger
-from .interfaces import (
-    PDFScraperInterface,
-    HttpClientInterface,
-    PDFExtractionStrategy,
-)
+from dataweaver.errors import LinkPDFExtractionError
+from .interfaces import PDFScraperInterface, HttpClientInterface, PDFExtractionStrategy
 
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
@@ -20,30 +17,20 @@ class RequestsPDFScraper(PDFScraperInterface):
     """
 
     def __init__(
-        self, http_client: HttpClientInterface, extractor: PDFExtractionStrategy
+        self, http_client: HttpClientInterface, extractor: "PDFExtractionStrategy"
     ) -> None:
         self.http_client = http_client
         self.extractor = extractor
 
     def get_pdf_links(self, url: str) -> list[str]:
-        """Obtém links de PDFs de uma página web.
-
-        Args:
-            url: URL da página alvo
-
-        Returns:
-            Lista de URLs absolutos para arquivos PDF
-
-        Note:
-            Retorna lista vazia em caso de erro e registra no logger
-        """
+        """Obtém links de PDFs de uma página web."""
         try:
             html = self.http_client.fetch_html(url)
             soup = BeautifulSoup(html, "html.parser")
             return self.extractor.extract(soup, url)
         except Exception as e:
-            logger.error(f"Falha ao extrair PDFs de '{url[:50]}...': {e}")
-            return []
+            logger.exception("Erro ao extrair PDFs")  # .exception inclui traceback
+            raise LinkPDFExtractionError(f"Erro ao processar a URL: {url}")
 
 
 class AnchorPDFExtractionStrategy(PDFExtractionStrategy):
@@ -106,7 +93,7 @@ class PDFLinkExtractor:
         Composite - combina resultados de várias estratégias
     """
 
-    def __init__(self, strategies: list[PDFExtractionStrategy]) -> None:
+    def __init__(self, strategies: list["PDFExtractionStrategy"]) -> None:
         self.strategies = strategies
 
     def extract(self, soup: BeautifulSoup, base_url: str) -> list[str]:

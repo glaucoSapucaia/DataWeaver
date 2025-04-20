@@ -1,4 +1,4 @@
-from dataweaver.utils import *
+from dataweaver.utils import ensure_directory_exists, get_env_variable
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -85,12 +85,16 @@ class DataConfig:
     """Configuração específica para o data"""
 
     zip_name: str  # Nome do arquivo ZIP para compactação
+    target_file: str  # Nome do arqvuios pdf para extração de tabelas
 
     @classmethod
     def create(cls) -> "DataConfig":
         """Método factory para criação da configuração do data"""
         return cls(
             zip_name=get_env_variable("CSV_ZIP_NAME", "csv_compactados.zip"),
+            target_file=get_env_variable(
+                "TARGET_FILE", "copy3_of_Anexo_I_Rol_2021RN_465.2021_RN627L.2024.pdf"
+            ),
         )
 
 
@@ -111,6 +115,7 @@ class AppConfig:
         self.dirs = DirectoryConfig.create()  # Configuração de diretórios
         ensure_directory_exists(self.dirs.pdfs)  # Cria diretórios necessários
         ensure_directory_exists(self.dirs.csv)  # Cria diretórios necessários
+        ensure_directory_exists(self.dirs.logs)
         self.logging = LoggingConfig.create(self.dirs.logs)  # Configuração de logs
         self.scraper = ScraperConfig.create()  # Configuração do scraper
         self.data = DataConfig.create()  # Configuração do data
