@@ -1,6 +1,6 @@
 # DataWeaver - Scraper de PDFs
 
-📌 Código Python que demonstra padrões de projeto, boas práticas de arquitetura e geração de diagramas automatizados para um sistema de scraping e processamento de PDFs.
+Código Python que demonstra padrões de projeto, boas práticas de arquitetura e geração de diagramas automatizados para um sistema de scraping e processamento de PDFs.
 
 
 ## Módulos Principais

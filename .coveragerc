@@ -28,4 +28,4 @@ skip_covered = True
 
 [html]
 directory = htmlcov
-title = Cobertura de Código - sortlab
+title = Cobertura de Código - dataweaver
