@@ -1,24 +1,27 @@
-from dataweaver.settings import *
-from dataweaver.scraper.modules import DefaultPDFServiceFactory
+from dataweaver.pipeline import PDFProcessor, CSVExtractor, CleanupManager
+from dataweaver.settings import logger, config
 
-# Configurações do usuário
 
-url = config.scraper.url
-zip_name = config.scraper.zip_name
-key_filter = config.scraper.filter
+def main() -> None:
+    try:
+        # Processa os PDFs
+        pdf_processor = PDFProcessor()
+        pdf_processor.run()
 
-pdfs_dir = config.dirs.pdfs
+        # Extrai dados para CSV
+        csv_extractor = CSVExtractor()
+        csv_extractor.set_pdf_file(config.data.target_file)
+        csv_extractor.run()
+
+        # Limpeza final
+        cleanup = CleanupManager()
+        cleanup.run()
+
+        logger.info("Processo concluído com sucesso!")
+    except Exception as e:
+        logger.error(f"Erro durante a execução: {str(e)}")
+        raise
 
 
 if __name__ == "__main__":
-    logger.info("Iniciando o serviço de processamento de PDFs...")
-
-    # Cria a factory com as configurações necessárias
-    factory = DefaultPDFServiceFactory(pdfs_dir, key_filter)
-
-    # Cria o serviço
-    service = factory.create_service(zip_name)
-
-    logger.info("Executando o processo de coleta e compactação dos PDFs...")
-    service.process(url)
-    logger.info("Processamento concluído!")
+    main()

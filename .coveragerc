@@ -1,7 +1,7 @@
 [run]
 branch = True
 source =
-    sortlab
+    dataweaver
 omit =
     */__init__.py
     */interfaces/*
@@ -28,4 +28,4 @@ skip_covered = True
 
 [html]
 directory = htmlcov
-title = Cobertura de Código - sortlab
+title = Cobertura de Código - dataweaver

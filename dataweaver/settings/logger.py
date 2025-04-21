@@ -1,13 +1,10 @@
 import logging
-from dataweaver.utils import ensure_directory_exists
 from .config import config
 
 log_dir = config.logging.log_dir
 log_file = config.logging.app_log
 log_warning = config.logging.warning_log
 log_error = config.logging.error_log
-
-ensure_directory_exists(log_dir)
 
 # ==================== FILTRO DE NÍVEL EXATO ====================
 

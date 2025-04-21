@@ -1,30 +1,42 @@
 # DataWeaver - Scraper de PDFs
 
-📌 Código Python que demonstra padrões de projeto, boas práticas de arquitetura e geração de diagramas automatizados para um sistema de scraping e processamento de PDFs.
+Código Python que demonstra padrões de projeto, boas práticas de arquitetura e geração de diagramas automatizados para um sistema de scraping e processamento de PDFs.
 
 
-## 🔍 Funcionalidades
+## Módulos Principais
+**1. PDF Scraper (pdf_scraper.py)**
+- Implementa estratégias de extração de links PDF (anchor e parágrafos) usando BeautifulSoup.
+- Padrões: Strategy (PDFExtractionStrategy), Composite (PDFLinkExtractor).
+- Classes:
+    - RequestsPDFScraper: Coordena HTTP client e estratégias de extração.
+    - AnchorPDFExtractionStrategy: Extrai links de tags ``<a>``.
+    - ParagraphPDFExtractionStrategy: Busca PDFs em textos com regex.
 
-- ✅ Scraping inteligente de links PDF com estratégias configuráveis (Anchor e Paragraph)
-- ✅ Download e organização automática de arquivos em diretórios
-- ✅ Compactação em ZIP com opções de logging e validação (via Decorator Pattern)
-- ✅ Remoção segura de arquivos temporários após processamento
-- ✅ Geração de diagramas (Mermaid) para documentação técnica (Sequência e Classes)
-- ✅ Injeção de Dependência e Factory Pattern para flexibilidade
+**2. File Manager (file_manager.py)**
+- Gerencia download e armazenamento de arquivos com separação de responsabilidades.
+- Padrões: Facade (FileManager), Dependency Injection.
+- Componentes:
+    - FileDownloader: Baixa arquivos via requests.
+    - FileSaver: Salva conteúdo no filesystem.
 
+**3. PDF Processing Service (pdf_processor.py)**
+- Orquestra o pipeline completo: extração → download → compressão.
+- Padrões: Facade (PDFProcessingService), Decorator (compressão).
+- Funcionalidades:
+    - Validação e logging via decorators (ValidationZipCompressor, LoggingZipCompressor).
 
-## 🛠️ Tecnologias Utilizadas
+**4. Zip Compressor (zip_compressor.py)**  
+- Compacta arquivos em ZIP com tratamento de erros.
+- Padrões: Decorator (extensibilidade para validação/logging).
+- Classes-chave:
+    - ZipCompressor: Implementação base.
+    - ZipCompressorDecorator: Classe base para decorators.
 
-- Python + Type Hints (para código tipado e claro)
-- Requests (HTTP client) + BeautifulSoup4 (HTML parsing)
-- Mermaid (diagramas de arquitetura)
-- Pytest (testes unitários)
-
-**Design Patterns:**
-- Factory Method (criação de serviços)
-- Strategy (extração de links PDF)
-- Decorator (compressão ZIP com validação/logging)
-- Singleton (configurações)
+**5. Factories (factories.py)**  
+- Fornece implementações concretas para todas as interfaces do sistema.
+- Padrões: Abstract Factory (DefaultPDFServiceFactory), Composition.
+- Componentes fabricados:
+    - HTTP Client, Link Extractor, Scraper, File Manager.
 
 
 ## 📦 Estrutura do Projeto
@@ -40,32 +52,6 @@ dataweaver/
         ├── zip_compressor.py      # Compactação ZIP com Decorators  
         └── interfaces/            # Contratos (Interfaces)  
 ```
-
-
-## ⚙️ Como Executar
-
-**1. Clone o repositório:**
-```bash
-git clone https://github.com/glaucoSapucaia/DataWeaver .
-```
-
-**2. Instale as dependências:**
-```bash
-pip install -r requirements.txt
-```
-
-**3. Execute o serviço:**
-```bash
-python3 ./main.py
-```
-
-**4. Configure o .env**
-```bash
-ZIP_NAME="CHANGE-ME"
-FILTER="CHANGE-ME"
-URL="CHANGE-ME"
-```
-
 
 
 ## 📊 Diagramas

@@ -1,20 +1,19 @@
 from .base import (
+    PDFServiceAbstractFactory,
+    HttpClientInterface,
     PDFScraperInterface,
     FileManagerInterface,
     ZipCompressorInterface,
-    PDFRemoveInterface,
-    HttpClientInterface,
-    PDFExtractionStrategy,
-    PDFServiceAbstractFactory,
     PDFProcessingServiceInterface,
+    PDFExtractionStrategy,
 )
 
 __all__ = [
+    "PDFServiceAbstractFactory",
+    "HttpClientInterface",
+    "PDFScraperInterface",
     "FileManagerInterface",
     "ZipCompressorInterface",
-    "PDFScraperInterface",
-    "PDFRemoveInterface",
-    "HttpClientInterface",
+    "PDFProcessingServiceInterface",
     "PDFExtractionStrategy",
-    "PDFServiceAbstractFactory",
 ]
