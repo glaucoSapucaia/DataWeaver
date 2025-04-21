@@ -9,4 +9,4 @@ base_dir = config.dirs.root
 os.environ["PYTHONPATH"] = str(base_dir)
 
 # Executa o pytest diretamente (isso roda no mesmo processo)
-pytest.main(["--cov=dataweaver.scraper", "--cov-report=html", "dataweaver/tests"])
+pytest.main(["--cov=dataweaver", "--cov-report=html", "dataweaver/tests"])

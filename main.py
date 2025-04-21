@@ -2,13 +2,13 @@ from dataweaver.pipeline import PDFProcessor, CSVExtractor, CleanupManager
 from dataweaver.settings import logger, config
 
 
-def main():
+def main() -> None:
     try:
         # Processa os PDFs
         pdf_processor = PDFProcessor()
         pdf_processor.run()
 
-        # Extrai dados para CSV (substitua pelo nome real do arquivo PDF baixado)
+        # Extrai dados para CSV
         csv_extractor = CSVExtractor()
         csv_extractor.set_pdf_file(config.data.target_file)
         csv_extractor.run()

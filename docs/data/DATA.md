@@ -1,6 +1,6 @@
 # DataWeaver - Módulo de Processamento de Dados
 
-📌 Data é um módulo Python projetado para extrair, processar e salvar tabelas de arquivos PDF em formato CSV, com suporte para compactação dos arquivos gerados.
+Data é um módulo Python projetado para extrair, processar e salvar tabelas de arquivos PDF em formato CSV, com suporte para compactação dos arquivos gerados.
 
 
 ## Módulos Principais
