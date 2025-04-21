@@ -1,7 +1,7 @@
 [run]
 branch = True
 source =
-    sortlab
+    dataweaver
 omit =
     */__init__.py
     */interfaces/*
